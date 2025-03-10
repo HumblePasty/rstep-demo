@@ -1,0 +1,43 @@
+@import 'https://js.arcgis.com/4.31/@arcgis/core/assets/esri/themes/dark/main.css';
+
+#root,
+html,
+body {
+  margin: 0;
+}
+arcgis-map {
+  display: block;
+  height: 100vh;
+  /* calculate the height of the map, 100vh minus the height of the header */
+  /* height: calc(100vh - 65px); */
+}
+
+/* Footer */
+#footer {
+  background-color: #323232;
+  color: white;
+  text-align: center;
+  /* height: 30px; */
+}
+
+/* a */
+a {
+  color: white;
+}
+
+/* basemap gallery */
+arcgis-basemap-gallery {
+  position: absolute;
+  top: -20px;
+  right: 10px;
+  /* z-index: 50; */
+  /* overflow */
+  overflow-y: scroll;
+  max-height: 400px;
+}
+
+/* buffer slider popover */
+#EditBufferPopover {
+  /* min width */
+  min-width: 300px;
+}
