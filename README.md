@@ -1,43 +1,59 @@
-# Map components React using Vite sample
+# R-STEP Solar Siting Tool WebGIS App
 
-📁 **[Click here to download this directory as a ZIP file](https://esri.github.io/jsapi-resources/zips/map-component-sample-react.zip)** 📁
+> Author: Haolin Li (hli@5lakesenergy)
+>
+> Last Updated: 1/17/2025
 
-This repository showcases how to use map components with [React](https://react.dev/).
 
-## Get started
 
-The project was created using [`yarn create vite`](https://vitejs.dev/guide/#scaffolding-your-first-vite-project) with the [React template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react).
+## Project Description
 
-Run `npm install` and then start adding modules.
+[formal description pending]
 
-For a list of all available `npm` commands see `scripts` in `package.json`, e.g. `npm run build`.
+This tool is for a Web tool based on ArcGIS developed to contextualize the setbacks of solar panel siting for local government.
 
-***Note:*** This sample demonstrates the recommended pattern for using components from the ArcGIS Map SDK for JavaScript by individually loading components.
 
-### Loading All Components
-The JavaScript Maps SDK also offers a convenience pattern useful for quick testing and prototyping. You can register all components at once using the following approach:
+
+## Project Hierarchy
 
 ```
-// Replace the individual imports with defineCustomElements()
- import { defineCustomElements } from "@arcgis/map-components/dist/loader";
- defineCustomElements(window, { resourcesUrl: "https://js.arcgis.com/map-components/4.31/assets" });
+/README.md - this document, the overall description
+/doc - documentation and meeting notes
+/map-component-sample-react - working src
+/solar_siting_react - next.js attempt
 ```
 
-For more details on using the SDK, please refer to the [ArcGIS Maps SDK for JavaScript documentation](https://developers.arcgis.com/javascript/latest/get-started-overview/).
 
-## Licensing
-Copyright 2024 Esri
 
-Licensed under the Apache License, Version 2.0 (the "License");
-you may not use this file except in compliance with the License.
-You may obtain a copy of the License at
+## Configuration and Compatibility
 
-   http://www.apache.org/licenses/LICENSE-2.0
+The initial implementation method is to complete the development of this webapp using ArcGIS Experience. However, after doing some research it seems that the ArcGIS Experience toolkit does not provide enough element to construct a complete workflow to support the spatial analysis (more specifically buffer and overlay) that is intrinsically needed in this project.
 
-Unless required by applicable law or agreed to in writing, software
-distributed under the License is distributed on an "AS IS" BASIS,
-WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-See the License for the specific language governing permissions and
-limitations under the License.
+Thus in the development process I switched and based the whole project on React with ArcGIS SDK for JavaScript for implementation.
 
-A copy of the license is available in the repository's [license.txt](https://github.com/Esri/jsapi-resources/blob/master/license.txt) file.
+**Tool versions**
+
+- React 18.2.0
+- ArcGIS SDK for JS 4.31
+- node.js 22.13.0
+- npm 10.9.2
+
+
+
+## How to Run
+
+1. Go to the source folder
+
+2. `npm install` to install the node modules
+
+3. `npm run` or `npm run dev` to see in debug mode
+
+4. Go to https://localhost:3001 and explore
+
+   Note that the port number might change due to setting
+
+
+
+## Deployed Project
+
+[TBD: Published Project Link]
