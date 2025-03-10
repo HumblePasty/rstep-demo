@@ -31,7 +31,8 @@
 
 **Debugs**
 
-- 
+- [ ] The whole project is live at https://humblepasty.github.io/rstep-demo/dist/
+- [ ] Read the documentation at https://humblepasty.github.io/rstep-demo/doc
 
 
 
