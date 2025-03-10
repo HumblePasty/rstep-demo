@@ -64,82 +64,32 @@ import Portal from "@arcgis/core/portal/Portal";
 // identity
 import IdentityManager from "@arcgis/core/identity/IdentityManager";
 
-// Separate function for onArcgisViewReadyChange
-function onArcgisViewReadyChange(event) {
-  // const view = event.detail;
-  // console.log("MapView ready", event);
-  // get the signed in user
-  const portal = new Portal();
-  portal.authMode = "immediate";
-  portal.load().then(() => {
-    // console.log("Portal loaded", portal);
-    document.querySelector("#header-user").fullName = portal.user.fullName;
-    document.querySelector("#header-user").username = portal.user.username;
-    // get avatar
-    document.querySelector("#header-user").avatarUrl = portal.user.thumbnailUrl;
-  });
-  const aboutBtn = document.getElementById("about-btn");
-  const aboutDialog = document.getElementById("about-dialog");
+// import group layer
+import GroupLayer from "@arcgis/core/layers/GroupLayer";
 
-  aboutBtn.addEventListener("click", () => {
-    aboutDialog.open = true;
-  });
-  // Adjust the visibilities of the layers
-  const map = event.target.map;
-  map.allLayers.forEach((layer) => {
-    if (layer.title === "Regrid_Nationwide_Parcel_Boundaries_May24") {
-      layer.visible = false;
-    }
-    if (layer.title === "Michigan") {
-      layer.visible = false;
-    }
-    if (layer.title === "Michigan Counties") {
-      layer.visible = false;
-    }
-  });
-  // there are two substation layers, delete the one that is not needed
-  const substationLayer = map.allLayers.find(
-    (layer) => layer.title === "Substations"
-  );
-  map.remove(substationLayer);
 
-  // create a new layer for the selected features
-  const selectedLayer = new GraphicsLayer({
-    title: "Selected Features",
-  });
-  map.add(selectedLayer);
-}
 
-function parcelsclicked(event) {
-  // console.log("Button clicked");
-  // get the sketch layer
-  const sketchLayer = document.querySelector("arcgis-sketch").layer;
-  // get the parcels layer
-  const parcelsLayer = document
-    .querySelector("arcgis-map")
-    .map.allLayers.find(
-      (layer) => layer.title === "Regrid_Nationwide_Parcel_Boundaries_May24"
-    );
-  // get the sketch graphics
-  const graphics = sketchLayer.graphics;
-  // get the parcels graphics
-  const parcelsGraphics = parcelsLayer.graphics;
-  // find the parcels that intersect the sketch graphics
-  const intersectingParcels = parcelsGraphics.filter((parcel) =>
-    graphics.some((graphic) => parcel.geometry.intersects(graphic.geometry))
-  );
-  // highlight the intersecting parcels
-  parcelsLayer.highlight(intersectingParcels);
-}
-
-// function for log out
-function logout() {
-  // log out the user
-  const myIdentityManager = IdentityManager;
-  myIdentityManager.destroyCredentials();
-  // reload the page
-  window.location.reload();
-}
+// function parcelsclicked(event) {
+//   // console.log("Button clicked");
+//   // get the sketch layer
+//   const sketchLayer = document.querySelector("arcgis-sketch").layer;
+//   // get the parcels layer
+//   const parcelsLayer = document
+//     .querySelector("arcgis-map")
+//     .map.allLayers.find(
+//       (layer) => layer.title === "Regrid_Nationwide_Parcel_Boundaries_May24"
+//     );
+//   // get the sketch graphics
+//   const graphics = sketchLayer.graphics;
+//   // get the parcels graphics
+//   const parcelsGraphics = parcelsLayer.graphics;
+//   // find the parcels that intersect the sketch graphics
+//   const intersectingParcels = parcelsGraphics.filter((parcel) =>
+//     graphics.some((graphic) => parcel.geometry.intersects(graphic.geometry))
+//   );
+//   // highlight the intersecting parcels
+//   parcelsLayer.highlight(intersectingParcels);
+// }
 
 // Create a root React component
 const root = createRoot(document.getElementById("root"));
@@ -289,17 +239,20 @@ root.render(
               id="EditBufferAction"
               text="Edit Buffer Distance"
               icon="rings"
+              onClick={BufferActionclicked}
             >
               <calcite-popover
                 id="EditBufferPopover"
                 reference-element="EditBufferAction"
                 label="Buffer"
                 overlayPositioning="fixed"
+                triggerDisabled
                 autoClose
               >
                 <calcite-label alignment="center">
                   Buffer Distance
                   <calcite-slider
+                    id="BufferSlider"
                     min="0"
                     max="100"
                     step="1"
@@ -444,8 +397,80 @@ root.render(
         <li>TBD...</li>
       </ul>
     </calcite-dialog>
+    {/* Alert */}
+    <calcite-alert icon="smile" id="buffer-alert" scale="m" autoCloseDuration="fast" autoClose>
+      <div slot="title">Buffer Editing</div>
+      <div slot="message">Please select a feature from the <b>"Selected Features"</b> Layer to continue</div>
+      <calcite-button slot="controls" appearance="clear">
+        Close
+      </calcite-button>
+    </calcite-alert>
   </StrictMode>
 );
+
+function onArcgisViewReadyChange(event) {
+  // const view = event.detail;
+  // console.log("MapView ready", event);
+  // get the signed in user
+  const portal = new Portal();
+  portal.authMode = "immediate";
+  portal.load().then(() => {
+    // console.log("Portal loaded", portal);
+    document.querySelector("#header-user").fullName = portal.user.fullName;
+    document.querySelector("#header-user").username = portal.user.username;
+    // get avatar
+    document.querySelector("#header-user").avatarUrl = portal.user.thumbnailUrl;
+  });
+  const aboutBtn = document.getElementById("about-btn");
+  const aboutDialog = document.getElementById("about-dialog");
+
+  aboutBtn.addEventListener("click", () => {
+    aboutDialog.open = true;
+  });
+  // Adjust the visibilities of the layers
+  const map = event.target.map;
+  map.allLayers.forEach((layer) => {
+    if (layer.title === "Regrid_Nationwide_Parcel_Boundaries_May24") {
+      layer.visible = false;
+    }
+    if (layer.title === "Michigan") {
+      layer.visible = false;
+    }
+    if (layer.title === "Michigan Counties") {
+      layer.visible = false;
+    }
+  });
+  // there are two substation layers, delete the one that is not needed
+  const substationLayer = map.allLayers.find(
+    (layer) => layer.title === "Substations"
+  );
+  map.remove(substationLayer);
+
+  // create a selected group layer
+  const selectedLayer = new GroupLayer({
+    title: "Selected Features",
+    visible: true,
+    visibilityMode: "independent",
+    layers: [],
+  });
+
+  // add the selected layer to the map
+  map.add(selectedLayer);
+
+  // get buffer slider
+  const bufferSlider = document.querySelector("#BufferSlider");
+  // add event listener for slider change
+  bufferSlider.addEventListener("calciteSliderChange", bufferSliderChange);
+}
+
+// function for log out
+function logout() {
+  // log out the user
+  const myIdentityManager = IdentityManager;
+  myIdentityManager.destroyCredentials();
+  // reload the page
+  window.location.reload();
+}
 
 // import esri request
 import esriRequest from "@arcgis/core/request.js";
@@ -762,13 +787,33 @@ function addRoads() {
     query.geometry = graphic.geometry;
     query.spatialRelationship = "intersects";
     roadLayer.queryFeatures(query).then((result) => {
-      // add the road graphics to the selected layer
-      const selectedLayer = map.allLayers.find(
-        (layer) => layer.title === "Selected Features"
-      );
-      selectedLayer.addMany(result.features
-        .filter((feature) => feature.geometry)
-        .map((feature) => feature.clone()));
+      const selectedFeaturesLayer = map.allLayers.find((layer) => layer.title === "Selected Features")
+      // if selected roads layer does not exist in the selected features layer, create it
+      if (!selectedFeaturesLayer.allLayers.find((layer) => layer.title === "Selected Roads")) {
+        // get the selected features
+        const selectedRoads = new FeatureLayer({
+          source: result.features,
+          fields: result.fields,
+          objectIdField: "OBJECTID",
+          title: "Selected Roads",
+          geometryType: result.geometryType,
+          renderer: roadLayer.renderer,
+          popupTemplate: roadLayer.popupTemplate,
+        });
+        // console.log("Selected layer created");
+        // add the selected roads to the selected features layer
+        selectedFeaturesLayer.add(selectedRoads);
+      }
+      else {
+        // add the road graphics to the selected layer
+        const selectedLayer = selectedFeaturesLayer.allLayers.find(
+          (layer) => layer.title === "Selected Roads"
+        );
+        const addRoadsEdits = {
+          addFeatures: result.features,
+        };
+        selectedLayer.applyEdits(addRoadsEdits);
+      }
     });
   });
 }
@@ -789,22 +834,165 @@ function selfDefinedPolygon() {
   // start the sketch
   polygonSketch.create("polygon");
 
+  // get the selected features layer
+  const selectedLayer = document
+    .querySelector("arcgis-map")
+    .map.allLayers.find((layer) => layer.title === "Selected Features");
+
   // add event listener for graphics change
   polygonSketch.layer.graphics.on("after-add", (event) => {
-    // add the graphic to the selected layer
-    const selectedLayer = document
-      .querySelector("arcgis-map")
-      .map.allLayers.find((layer) => layer.title === "Selected Features");
-    selectedLayer.add(event.item);
+    let graphic = event.item;
+    // console.log("Polygon added", event.item);
+    // if polygon layer does not exist in the selected features layer, create it
+    if (!selectedLayer.allLayers.find((layer) => layer.title === "Selected Polygon")) {
+      // get the added graphic
+      // define the attributes
+      graphic.attributes = {
+        id: 1,
+        name: "Self Defined Polygon 1",
+      };
+      // get the selected features
+      const selectedPolygon = new FeatureLayer({
+        source: [graphic],
+        fields: [
+          {
+            name: "OBJECTID",
+            alias: "ID",
+            type: "oid",
+          },
+          {
+            name: "name",
+            alias: "Name",
+            type: "string",
+          }
+        ],
+        objectIdField: "OBJECTID",
+        title: "Selected Polygon",
+        geometryType: graphic.geometry.type,
+        popupTemplate: {
+          title: "{name}",
+          content: "This is a self-defined polygon",
+        },
+      });
+      // add the selected polygon to the selected features layer
+      selectedLayer.add(selectedPolygon);
+    }
+    else {
+      // get the selected polygon layer
+      const selectedPolygonLayer = selectedLayer.allLayers.find(
+        (layer) => layer.title === "Selected Polygon"
+      );
+      // get the number of graphics in the layer
+      selectedPolygonLayer.queryFeatureCount().then((count) => {
+        // console.log(graphic);
+        // polygonCount = count;
+        graphic.attributes = {
+          id: count + 1,
+          name: `Self Defined Polygon ${count + 1}`,
+        };
+        // create edits
+        const addPolygonEdits = {
+          addFeatures: [graphic],
+        };
+        // apply edits
+        selectedPolygonLayer.applyEdits(addPolygonEdits);
+      });
+    }
   });
 }
+
+// import calcite alert
+import "@esri/calcite-components/dist/components/calcite-alert";
+
+function BufferActionclicked() {
+  const BufferEditPopOver = document.querySelector("#EditBufferPopover");
+  if (BufferEditPopOver.open) {
+    BufferEditPopOver.open = false;
+    return;
+  }
+  // get the current view
+  const view = document.querySelector("arcgis-map").view;
+  // create a buffer layer if it does not exist
+  if (!view.map.allLayers.find((layer) => layer.title === "Buffers")) {
+    const bufferLayer = new GraphicsLayer({
+      title: "Buffers",
+    });
+    view.map.add(bufferLayer);
+  }
+  // if there is no popup, raise an alert
+  // popup={}
+  if (Object.keys(view.popup).length === 0 || view.popup.visible === false) {
+    console.log("No popup");
+    // bring up an alert
+    document.querySelector("#buffer-alert").open = true;
+  }
+  else {
+    // open the buffer popover
+    BufferEditPopOver.open = true;
+  }
+}
+
+// slider change
+function bufferSliderChange(event) {
+  // get the current view
+  const view = document.querySelector("arcgis-map").view;
+  // get the popup features
+  const popupFeatures = view.popup.features;
+  // get the selected features layer
+  const selectedLayer = view.map.allLayers.find(
+    (layer) => layer.title === "Selected Features"
+  );
+  // get the buffer layer
+  const bufferLayer = view.map.allLayers.find(
+    (layer) => layer.title === "Buffers"
+  );
+  // get the buffer slider value
+  var sliderValue = event.target.value;
+  // create a buffer around the selected features
+  const bufferGraphics = popupFeatures.map((feature) => {
+    const geometry = feature.geometry.clone();
+    const bufferGeometry = bufferOperator.execute(geometry, sliderValue);
+    return new Graphic({
+      geometry: bufferGeometry,
+      symbol: {
+        type: "simple-fill",
+        color: [0, 0, 0, 0.5],
+        outline: {
+          color: [0, 0, 0, 1],
+          width: 1,
+        },
+      },
+    });
+  });
+
+  // add the buffer graphics to the buffer layer
+  bufferLayer.addMany(bufferGraphics);
+}
+
+// clip opeator
+import * as differenceOperator from "@arcgis/core/geometry/operators/differenceOperator.js";
 
 // on clip result action clicked
 function clipResultClicked() {
   // get the sketch layer (solar array)
   const sketchLayer = document.querySelector("#my-sketch").layer;
-  // get the selected layer
-  const selectedLayer = document
+  // get the buffers layer
+  const bufferLayer = document
     .querySelector("arcgis-map")
-    .map.allLayers.find((layer) => layer.title === "Selected Features");
+    .map.allLayers.find((layer) => layer.title === "Buffers");
+  // subtract the buffer graphics from the sketch graphics
+  const sketchGraphics = sketchLayer.graphics;
+  const bufferGraphics = bufferLayer.graphics;
+  // convert to polygon
+  const clippedGraphics = differenceOperator.execute(sketchGraphics.items[0].geometry, bufferGraphics.items[0].geometry);
+  console.log("Clipped Graphics", clippedGraphics
+  );
+  // create a new layer for the clipped result
+  const clippedLayer = new GraphicsLayer({
+    title: "Clipped Result",
+  });
+  // add the clipped graphics to the clipped layer
+  clippedLayer.addMany(clippedGraphics);
+  // add the clipped layer to the map
+  document.querySelector("arcgis-map").map.add(clippedLayer);
 }
