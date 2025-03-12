@@ -1,0 +1,1 @@
+import{k as n,m as r,n as s}from"./index-DYg3Dm5u.js";const a=new WeakMap;function d(e){return!e.destroyed&&(a.has(e)||e.addHandles([n(()=>{const t=e.parent;return!(!t||!("type"in t))&&(t.type==="catalog-dynamic-group"||d(t))},t=>a.set(e,t),s),r(()=>a.delete(e))]),a.get(e))}export{d as a};

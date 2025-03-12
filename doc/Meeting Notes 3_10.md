@@ -31,8 +31,13 @@
 
 **Debugs**
 
+
+
 - [ ] The whole project is live at https://humblepasty.github.io/rstep-demo/dist/
+
 - [ ] Read the documentations at https://humblepasty.github.io/rstep-demo/doc
+
+  (Pending)
 
 
 
@@ -47,3 +52,10 @@
   - [ ] Might involve reconstructing the project
 - [ ] try hosting on ArcGIS online
   - EGLE: https://www.michigan.gov/egle/maps-data
+
+
+
+turn the unit to feet
+
+- the polygon buffer does not work after clipped
+- undo function

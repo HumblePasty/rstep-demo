@@ -2,7 +2,7 @@ import * as React from "react";
 import { StrictMode } from "react";
 import { createRoot } from "react-dom/client";
 import "./index.css";
-// import calcite components
+// import calcite style sheets
 import "@esri/calcite-components/dist/calcite/calcite.css";
 
 import { setAssetPath } from "@esri/calcite-components/dist/components";
@@ -10,41 +10,34 @@ import { setAssetPath } from "@esri/calcite-components/dist/components";
 setAssetPath("https://js.arcgis.com/calcite-components/2.13.2/assets");
 
 // import calcite components
-// shell
 import "@esri/calcite-components/dist/components/calcite-shell";
 import "@esri/calcite-components/dist/components/calcite-shell-panel";
-// Button
 import "@esri/calcite-components/dist/components/calcite-button";
 import "@esri/calcite-components/dist/components/calcite-icon";
 import "@esri/calcite-components/dist/components/calcite-slider";
 import "@esri/calcite-components/dist/components/calcite-navigation";
 import "@esri/calcite-components/dist/components/calcite-navigation-logo";
-// navigation user
 import "@esri/calcite-components/dist/components/calcite-navigation-user";
-// navigation menu
 import "@esri/calcite-components/dist/components/calcite-shell";
-import "@esri/calcite-components/dist/components/calcite-shell-panel";
 import "@esri/calcite-components/dist/components/calcite-menu";
 import "@esri/calcite-components/dist/components/calcite-menu-item";
-// dialog
 import "@esri/calcite-components/dist/components/calcite-dialog";
-// label
 import "@esri/calcite-components/dist/components/calcite-label";
-// dropdown
 import "@esri/calcite-components/dist/components/calcite-dropdown";
 import "@esri/calcite-components/dist/components/calcite-dropdown-group";
 import "@esri/calcite-components/dist/components/calcite-dropdown-item";
-// Action Pad
 import "@esri/calcite-components/dist/components/calcite-action-pad";
 import "@esri/calcite-components/dist/components/calcite-action";
-// Tooltip
+import "@esri/calcite-components/dist/components/calcite-action-group";
 import "@esri/calcite-components/dist/components/calcite-tooltip";
-// link
 import "@esri/calcite-components/dist/components/calcite-link";
-// popover
 import "@esri/calcite-components/dist/components/calcite-popover";
-// icons
 import "@esri/calcite-ui-icons";
+// tree
+import "@esri/calcite-components/dist/components/calcite-tree";
+import "@esri/calcite-components/dist/components/calcite-tree-item";
+// fab
+import "@esri/calcite-components/dist/components/calcite-fab";
 
 // Import map components
 import "@arcgis/map-components/dist/components/arcgis-map";
@@ -66,30 +59,6 @@ import IdentityManager from "@arcgis/core/identity/IdentityManager";
 
 // import group layer
 import GroupLayer from "@arcgis/core/layers/GroupLayer";
-
-
-
-// function parcelsclicked(event) {
-//   // console.log("Button clicked");
-//   // get the sketch layer
-//   const sketchLayer = document.querySelector("arcgis-sketch").layer;
-//   // get the parcels layer
-//   const parcelsLayer = document
-//     .querySelector("arcgis-map")
-//     .map.allLayers.find(
-//       (layer) => layer.title === "Regrid_Nationwide_Parcel_Boundaries_May24"
-//     );
-//   // get the sketch graphics
-//   const graphics = sketchLayer.graphics;
-//   // get the parcels graphics
-//   const parcelsGraphics = parcelsLayer.graphics;
-//   // find the parcels that intersect the sketch graphics
-//   const intersectingParcels = parcelsGraphics.filter((parcel) =>
-//     graphics.some((graphic) => parcel.geometry.intersects(graphic.geometry))
-//   );
-//   // highlight the intersecting parcels
-//   parcelsLayer.highlight(intersectingParcels);
-// }
 
 // Create a root React component
 const root = createRoot(document.getElementById("root"));
@@ -159,6 +128,22 @@ root.render(
         >
           R-STEP Program
         </a>
+        &nbsp; | &nbsp; Powered by &nbsp;
+        <a href="https://www.esri.com" target="_blank">
+          Esri
+        </a>
+        &nbsp; | &nbsp; See&nbsp;
+        <a target="_self" id="attributionLink" href="#">
+          Attribution
+        </a>
+        <calcite-tooltip
+          reference-element="attributionLink"
+          placement="top"
+          theme="dark"
+          id="attributionTooltip"
+          // closeOnClick
+        >
+        </calcite-tooltip>
       </div>
       {/* Map */}
       <arcgis-map
@@ -170,125 +155,160 @@ root.render(
         {/* Actions */}
         <arcgis-placement position="top-left">
           <calcite-action-pad expanded="true" overlayPositioning="fixed">
-            {/* Add Polygon Action */}
-            <calcite-action
-              text="Define Solar Array"
-              icon="polygon"
-              id="AddAction"
-            ></calcite-action>
-            <calcite-popover
-              reference-element="AddAction"
-              label="Add"
-              overlayPositioning="fixed"
-              autoClose
-            >
-              <arcgis-sketch
-                id="my-sketch"
-                onarcgisCreate={sketchCreated}
-              ></arcgis-sketch>
-            </calcite-popover>
-            <calcite-action
-              text="Upload Base Data"
-              icon="upload"
-              onClick={uploadActionClicked}
-            ></calcite-action>
-            <calcite-action
-              text="Edit Base Data"
-              icon="pencil"
-              id="EditAction"
-            ></calcite-action>
-            <calcite-popover
-              reference-element="EditAction"
-              label="Edit"
-              overlayPositioning="fixed"
-              autoClose
-              // scale="l"
-            >
-              <arcgis-editor></arcgis-editor>
-            </calcite-popover>
-            <calcite-action
-              text="Add Clipping Features"
-              icon="crop"
-              id="CropAction"
-            ></calcite-action>
-            <calcite-popover
-              reference-element="CropAction"
-              label="Crop"
-              overlayPositioning="fixed"
-              autoClose
-            >
-              <calcite-action-pad expandDisabled expanded>
-                <calcite-action
-                  text="Add Building Footprints"
-                  icon="footprint"
-                  onClick={addBuildingFootprints}
-                ></calcite-action>
-                <calcite-action
-                  text="Add Roads"
-                  icon="curve"
-                  onClick={addRoads}
-                ></calcite-action>
-                <calcite-action
-                  text="Self-defined Polygon"
-                  icon="polygon"
-                  onClick={selfDefinedPolygon}
-                ></calcite-action>
-              </calcite-action-pad>
-            </calcite-popover>
-            <calcite-action
-              id="EditBufferAction"
-              text="Edit Buffer Distance"
-              icon="rings"
-              onClick={BufferActionclicked}
-            >
+            {/* <calcite-tree selectionMode="none">
+              <calcite-tree-item>
+                Edit
+                <calcite-tree slot="children">
+                  <calcite-tree-item iconStart="">
+                    <calcite-action
+                      text="Define Solar Array"
+                      icon="polygon"
+                      id="AddAction"
+                      // focusTrapDisabled
+                    ></calcite-action>
+                  </calcite-tree-item>
+                  <calcite-tree-item>B</calcite-tree-item>
+                </calcite-tree>
+              </calcite-tree-item>
+              <calcite-tree-item>C</calcite-tree-item>
+            </calcite-tree> */}
+            {/* Edit Action */}
+            <calcite-action-group label="Edit" columns="2">
+              <calcite-action
+                text="Define Solar Array"
+                icon="polygon"
+                id="AddAction"
+                // focusTrapDisabled
+              ></calcite-action>
               <calcite-popover
-                id="EditBufferPopover"
-                reference-element="EditBufferAction"
-                label="Buffer"
+                reference-element="AddAction"
+                label="Add"
                 overlayPositioning="fixed"
-                triggerDisabled
+                closable
+              >
+                <arcgis-sketch
+                  id="my-sketch"
+                  creationMode="single"
+                  onarcgisCreate={sketchCreated}
+                ></arcgis-sketch>
+              </calcite-popover>
+              <calcite-action
+                text="Add Clipping Features"
+                icon="crop"
+                id="CropAction"
+              ></calcite-action>
+              <calcite-popover
+                reference-element="CropAction"
+                label="Crop"
+                overlayPositioning="fixed"
                 autoClose
               >
-                <calcite-label alignment="center">
-                  Buffer Distance
-                  <calcite-slider
-                    id="BufferSlider"
-                    min="0"
-                    max="100"
-                    step="1"
-                    value="50"
-                    label-handles
-                    label-ticks
-                    min-label="1"
-                    max-label="100"
-                  ></calcite-slider>
-                </calcite-label>
+                <calcite-action-pad expandDisabled expanded>
+                  <calcite-action
+                    text="Detect Building Footprints"
+                    icon="footprint"
+                    onClick={addBuildingFootprints}
+                  ></calcite-action>
+                  <calcite-action
+                    text="Road Segments"
+                    icon="curve"
+                    onClick={addRoads}
+                  ></calcite-action>
+                  <calcite-action
+                    text="Self-defined Polyline"
+                    icon="line"
+                    onClick={selfDefinedPolyline}
+                  ></calcite-action>
+                  <calcite-action
+                    text="Self-defined Polygon"
+                    icon="polygon"
+                    onClick={selfDefinedPolygon}
+                  ></calcite-action>
+                </calcite-action-pad>
               </calcite-popover>
-            </calcite-action>
-            <calcite-action
-              text="View Clipped Results"
-              icon="view-visible"
-              onClick={clipResultClicked}
-            ></calcite-action>
-            <calcite-action
-              text="Import from File"
-              icon="upload"
-              onClick={importBtnClicked}
-            ></calcite-action>
-            <calcite-action
-              id="ExportAction"
-              text="Export Results"
-              icon="download"
-              onClick={exportBtnClicked}
-              disabled
-            ></calcite-action>
-            <calcite-action
-              id="ClearAction"
-              text="Clear"
-              icon="trash"
-              onClick={clearBtnClicked}
-              disabled
-            ></calcite-action>
+              <calcite-action
+                id="EditBufferAction"
+                text="Create/Edit Buffers"
+                icon="rings"
+                onClick={BufferActionclicked}
+              >
+                <calcite-popover
+                  id="EditBufferPopover"
+                  reference-element="EditBufferAction"
+                  label="Buffer"
+                  overlayPositioning="fixed"
+                  triggerDisabled
+                  autoClose
+                >
+                  <calcite-label alignment="center">
+                    Buffer Distance
+                    <calcite-slider
+                      id="BufferSlider"
+                      min="0"
+                      max="100"
+                      step="1"
+                      value="50"
+                      label-handles
+                      label-ticks
+                      min-label="1"
+                      max-label="100"
+                    ></calcite-slider>
+                  </calcite-label>
+                </calcite-popover>
+              </calcite-action>
+              <calcite-action
+                text="View Clipped Results"
+                icon="view-visible"
+                onClick={clipResultClicked}
+              ></calcite-action>
+              <calcite-action
+                id="ClearAction"
+                text="Clear Solar Array"
+                icon="trash"
+                onClick={clearBtnClicked}
+                disabled
+              ></calcite-action>
+            </calcite-action-group>
+
+            {/* Data Action */}
+            <calcite-action-group>
+              <calcite-action
+                text="Upload Layer"
+                icon="upload"
+                onClick={uploadActionClicked}
+              ></calcite-action>
+              <calcite-action
+                text="Edit Layer"
+                icon="pencil"
+                id="EditAction"
+              ></calcite-action>
+              <calcite-popover
+                reference-element="EditAction"
+                label="Edit"
+                overlayPositioning="fixed"
+                autoClose
+                // scale="l"
+              >
+                <arcgis-editor></arcgis-editor>
+              </calcite-popover>
+            </calcite-action-group>
+
+            <calcite-action-group>
+              <calcite-action
+                text="Import from File"
+                icon="upload"
+                onClick={importBtnClicked}
+              ></calcite-action>
+              <calcite-action
+                id="ExportAction"
+                text="Export Results"
+                icon="download"
+                onClick={exportBtnClicked}
+                disabled
+              ></calcite-action>
+              
+            </calcite-action-group>
+
             <calcite-tooltip slot="expand-tooltip">
               Toggle Action Bar
             </calcite-tooltip>
@@ -326,7 +346,9 @@ root.render(
               overlayPositioning="fixed"
               autoClose
             >
-              <arcgis-layer-list></arcgis-layer-list>
+              <arcgis-layer-list
+                dragEnabled
+              ></arcgis-layer-list>
             </calcite-popover>
             <calcite-action
               text="Legend"
@@ -372,12 +394,33 @@ root.render(
             </calcite-tooltip> */}
           </calcite-action-pad>
         </arcgis-placement>
+        <arcgis-placement position="mannual">
+          <calcite-fab
+            id="bottom-panel-toggle"
+            onClick={
+              () => {
+                document.querySelector("#bottom-panel").collapsed = !document.querySelector("#bottom-panel").collapsed;
+              }
+            }
+          ></calcite-fab>
+        </arcgis-placement>
       </arcgis-map>
+
+      {/* Bottom Panel */}
+      <calcite-shell-panel
+        id="bottom-panel"
+        position="end"
+        slot="panel-bottom"
+        collapsed
+        resizable
+      >
+        Text
+      </calcite-shell-panel>
     </calcite-shell>
 
     {/* Dialogs */}
     {/* About */}
-    <calcite-dialog modal heading="About" id="about-dialog">
+    <calcite-dialog modal heading="About" id="about-dialog" slot="dialog">
       <calcite-label>
         This is a web toolkit for solar panel planning.
       </calcite-label>
@@ -398,9 +441,18 @@ root.render(
       </ul>
     </calcite-dialog>
     {/* Alert */}
-    <calcite-alert icon="smile" id="buffer-alert" scale="m" autoCloseDuration="fast" autoClose>
+    <calcite-alert
+      icon="smile"
+      id="buffer-alert"
+      scale="m"
+      autoCloseDuration="fast"
+      autoClose
+    >
       <div slot="title">Buffer Editing</div>
-      <div slot="message">Please select a feature from the <b>"Selected Features"</b> Layer to continue</div>
+      <div slot="message">
+        Please select a feature from the <b>"Clipping Features"</b> Layer to
+        continue
+      </div>
       <calcite-button slot="controls" appearance="clear">
         Close
       </calcite-button>
@@ -409,13 +461,10 @@ root.render(
 );
 
 function onArcgisViewReadyChange(event) {
-  // const view = event.detail;
-  // console.log("MapView ready", event);
-  // get the signed in user
+  // change the avatar
   const portal = new Portal();
   portal.authMode = "immediate";
   portal.load().then(() => {
-    // console.log("Portal loaded", portal);
     document.querySelector("#header-user").fullName = portal.user.fullName;
     document.querySelector("#header-user").username = portal.user.username;
     // get avatar
@@ -424,9 +473,11 @@ function onArcgisViewReadyChange(event) {
   const aboutBtn = document.getElementById("about-btn");
   const aboutDialog = document.getElementById("about-dialog");
 
+  // add event listener for about button
   aboutBtn.addEventListener("click", () => {
     aboutDialog.open = true;
   });
+
   // Adjust the visibilities of the layers
   const map = event.target.map;
   map.allLayers.forEach((layer) => {
@@ -446,9 +497,33 @@ function onArcgisViewReadyChange(event) {
   );
   map.remove(substationLayer);
 
+  // change the name of the sketch layer
+  const sketchLayer = document.querySelector("#my-sketch").layer;
+  sketchLayer.title = "Solar Array";
+
+  // create a group layer to hold the solar data layers
+  const solarDataLayer = new GroupLayer({
+    title: "Solar Data",
+    visible: true,
+    visibilityMode: "independent",
+    layers: [],
+  });
+
+  // get all the layers except the sketch layer or a type of
+  const baseLayers = map.allLayers.filter(
+    (layer) =>
+      layer.title !== "Solar Array" &&
+      layer.title !== "World Topographic Map" &&
+      layer.title !== "World Hillshade"
+  );
+
+  // add the layers to the base data layer
+  solarDataLayer.addMany(baseLayers);
+  map.add(solarDataLayer);
+
   // create a selected group layer
   const selectedLayer = new GroupLayer({
-    title: "Selected Features",
+    title: "Clipping Features",
     visible: true,
     visibilityMode: "independent",
     layers: [],
@@ -461,6 +536,19 @@ function onArcgisViewReadyChange(event) {
   const bufferSlider = document.querySelector("#BufferSlider");
   // add event listener for slider change
   bufferSlider.addEventListener("calciteSliderChange", bufferSliderChange);
+
+  // get the attribution widget
+  const attributionWidget = document
+    .querySelector("arcgis-map")
+    .view.ui.find("attribution");
+  attributionWidget.visible = false;
+
+  // show attribution
+  const attributionTooltip = document.getElementById("attributionTooltip");
+  attributionTooltip.addEventListener("calciteTooltipBeforeOpen", (event) => {
+    console.log("Tooltip before open", event);
+    document.getElementById("attributionTooltip").innerHTML = attributionWidget.attributionText
+  });
 }
 
 // function for log out
@@ -787,9 +875,15 @@ function addRoads() {
     query.geometry = graphic.geometry;
     query.spatialRelationship = "intersects";
     roadLayer.queryFeatures(query).then((result) => {
-      const selectedFeaturesLayer = map.allLayers.find((layer) => layer.title === "Selected Features")
+      const selectedFeaturesLayer = map.allLayers.find(
+        (layer) => layer.title === "Clipping Features"
+      );
       // if selected roads layer does not exist in the selected features layer, create it
-      if (!selectedFeaturesLayer.allLayers.find((layer) => layer.title === "Selected Roads")) {
+      if (
+        !selectedFeaturesLayer.allLayers.find(
+          (layer) => layer.title === "Selected Roads"
+        )
+      ) {
         // get the selected features
         const selectedRoads = new FeatureLayer({
           source: result.features,
@@ -803,8 +897,7 @@ function addRoads() {
         // console.log("Selected layer created");
         // add the selected roads to the selected features layer
         selectedFeaturesLayer.add(selectedRoads);
-      }
-      else {
+      } else {
         // add the road graphics to the selected layer
         const selectedLayer = selectedFeaturesLayer.allLayers.find(
           (layer) => layer.title === "Selected Roads"
@@ -815,6 +908,115 @@ function addRoads() {
         selectedLayer.applyEdits(addRoadsEdits);
       }
     });
+  });
+}
+
+import * as reactiveUtils from "@arcgis/core/core/reactiveUtils.js";
+
+function selfDefinedPolyline() {
+  // get the current view
+  const view = document.querySelector("arcgis-map").view;
+
+  // construct a new sketch
+  const polylineSketch = new Sketch({
+    layer: new GraphicsLayer(),
+    view: view,
+    creationMode: "single",
+    updateOnGraphicClick: true,
+  });
+
+  // start the sketch
+  polylineSketch.create("polyline");
+
+  // get the selected features layer
+  const selectedLayer = document
+    .querySelector("arcgis-map")
+    .map.allLayers.find((layer) => layer.title === "Clipping Features");
+
+  // add event listener for graphics change
+  polylineSketch.layer.graphics.on("after-add", (event) => {
+    let graphic = event.item;
+    // console.log("Polyline added", event.item);
+    // if polyline layer does not exist in the selected features layer, create it
+    if (
+      !selectedLayer.allLayers.find((layer) => layer.title === "Selected Polyline")
+    ) {
+      // get the added graphic
+      // define the attributes
+      graphic.attributes = {
+        id: 1,
+        name: "Self Defined Polyline 1",
+      };
+      // create a action object
+      const deletAction = {
+        title: "Delete",
+        id: "delete-this",
+        className: "esri-icon-trash",
+      };
+
+      // get the selected features
+      const selectedPolyline = new FeatureLayer({
+        source: [graphic],
+        fields: [
+          {
+            name: "OBJECTID",
+            alias: "ID",
+            type: "oid",
+          },
+          {
+            name: "name",
+            alias: "Name",
+            type: "string",
+          },
+        ],
+        objectIdField: "OBJECTID",
+        title: "Selected Polyline",
+        geometryType: graphic.geometry.type,
+        popupTemplate: {
+          actions: [deletAction],
+          title: "{name}",
+          content: "This is a self-defined polyline",
+        },
+      });
+      // add the selected polyline to the selected features layer
+      selectedLayer.add(selectedPolyline);
+    } else {
+      // get the selected polyline layer
+      const selectedPolylineLayer = selectedLayer.allLayers.find(
+        (layer) => layer.title === "Selected Polyline"
+      );
+      // get the number of graphics in the layer
+      selectedPolylineLayer.queryFeatureCount().then((count) => {
+        // console.log(graphic);
+        // polylineCount = count;
+        graphic.attributes = {
+          id: count + 1,
+          name: `Self Defined Polyline ${count + 1}`,
+        };
+        // create edits
+        const addPolylineEdits = {
+          addFeatures: [graphic],
+        };
+        // apply edits
+        selectedPolylineLayer.applyEdits(addPolylineEdits);
+      });
+    }
+    // add event listener for trigger action
+    reactiveUtils.on(
+      () => view.popup, "trigger-action", (event) => {
+        if (event.action.id === "delete-this") {
+          const popUpFeature = view.popup.selectedFeature;
+          // get the selected features layer
+          const myLayer = popUpFeature.layer;
+          // apply edits
+          myLayer.applyEdits({
+            deleteFeatures: [popUpFeature],
+          });
+          // close the popup
+          view.popup.close();
+        }
+      }
+    )
   });
 }
 
@@ -837,20 +1039,31 @@ function selfDefinedPolygon() {
   // get the selected features layer
   const selectedLayer = document
     .querySelector("arcgis-map")
-    .map.allLayers.find((layer) => layer.title === "Selected Features");
+    .map.allLayers.find((layer) => layer.title === "Clipping Features");
 
   // add event listener for graphics change
   polygonSketch.layer.graphics.on("after-add", (event) => {
     let graphic = event.item;
     // console.log("Polygon added", event.item);
     // if polygon layer does not exist in the selected features layer, create it
-    if (!selectedLayer.allLayers.find((layer) => layer.title === "Selected Polygon")) {
+    if (
+      !selectedLayer.allLayers.find(
+        (layer) => layer.title === "Selected Polygon"
+      )
+    ) {
       // get the added graphic
       // define the attributes
       graphic.attributes = {
         id: 1,
         name: "Self Defined Polygon 1",
       };
+      // create a action object
+      const deletAction = {
+        title: "Delete",
+        id: "delete-this",
+        className: "esri-icon-trash",
+      };
+
       // get the selected features
       const selectedPolygon = new FeatureLayer({
         source: [graphic],
@@ -864,20 +1077,20 @@ function selfDefinedPolygon() {
             name: "name",
             alias: "Name",
             type: "string",
-          }
+          },
         ],
         objectIdField: "OBJECTID",
         title: "Selected Polygon",
         geometryType: graphic.geometry.type,
         popupTemplate: {
+          actions: [deletAction],
           title: "{name}",
           content: "This is a self-defined polygon",
         },
       });
       // add the selected polygon to the selected features layer
       selectedLayer.add(selectedPolygon);
-    }
-    else {
+    } else {
       // get the selected polygon layer
       const selectedPolygonLayer = selectedLayer.allLayers.find(
         (layer) => layer.title === "Selected Polygon"
@@ -898,6 +1111,22 @@ function selfDefinedPolygon() {
         selectedPolygonLayer.applyEdits(addPolygonEdits);
       });
     }
+    // add event listener for trigger action
+    reactiveUtils.on(
+      () => view.popup, "trigger-action", (event) => {
+        if (event.action.id === "delete-this") {
+          const popUpFeature = view.popup.selectedFeature;
+          // get the selected features layer
+          const myLayer = popUpFeature.layer;
+          // apply edits
+          myLayer.applyEdits({
+            deleteFeatures: [popUpFeature],
+          });
+          // close the popup
+          view.popup.close();
+        }
+      }
+    )
   });
 }
 
@@ -925,8 +1154,7 @@ function BufferActionclicked() {
     console.log("No popup");
     // bring up an alert
     document.querySelector("#buffer-alert").open = true;
-  }
-  else {
+  } else {
     // open the buffer popover
     BufferEditPopOver.open = true;
   }
@@ -940,7 +1168,7 @@ function bufferSliderChange(event) {
   const popupFeatures = view.popup.features;
   // get the selected features layer
   const selectedLayer = view.map.allLayers.find(
-    (layer) => layer.title === "Selected Features"
+    (layer) => layer.title === "Clipping Features"
   );
   // get the buffer layer
   const bufferLayer = view.map.allLayers.find(
@@ -984,9 +1212,11 @@ function clipResultClicked() {
   const sketchGraphics = sketchLayer.graphics;
   const bufferGraphics = bufferLayer.graphics;
   // convert to polygon
-  const clippedGraphics = differenceOperator.execute(sketchGraphics.items[0].geometry, bufferGraphics.items[0].geometry);
-  console.log("Clipped Graphics", clippedGraphics
+  const clippedGraphics = differenceOperator.execute(
+    sketchGraphics.items[0].geometry,
+    bufferGraphics.items[0].geometry
   );
+  console.log("Clipped Graphics", clippedGraphics);
   // create a new layer for the clipped result
   const clippedLayer = new GraphicsLayer({
     title: "Clipped Result",

@@ -41,3 +41,13 @@ arcgis-basemap-gallery {
   /* min width */
   min-width: 300px;
 }
+
+/* fab position */
+#bottom-panel-toggle {
+  position: absolute;
+  /* bottom: the height of the footer */
+  bottom: 30px;
+  /* middle */
+  left: 50%;
+  z-index: 50;
+}
