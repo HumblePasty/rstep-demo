@@ -1,1 +1,0 @@
-import{bJ as r}from"./index-DYg3Dm5u.js";function i(e){return e.icon?e.icon:"image"in e&&e.image||e.className?void 0:"question"}function u(e){return e?{backgroundImage:`url(${e})`}:{}}function c({action:e,feature:o}){const n=o==null?void 0:o.attributes,t="image"in e?e.image:void 0;return t&&n?r(t,n):t??""}export{c as e,u as n,i as t};
