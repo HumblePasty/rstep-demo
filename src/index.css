@@ -51,3 +51,22 @@ arcgis-basemap-gallery {
   left: 50%;
   z-index: 50;
 }
+
+calcite-shell-panel {
+  /* height */
+  --calcite-shell-panel-min-width: 0px;
+  --calcite-shell-panel-width: 0px;
+}
+
+#my-expand {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  z-index: 50;
+  background-color: white;
+}
+
+/* bottom panel */
+#bottom-panel {
+  /* height: 50px; */
+}

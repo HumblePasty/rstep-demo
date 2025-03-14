@@ -19,6 +19,7 @@ import "@esri/calcite-components/dist/components/calcite-navigation";
 import "@esri/calcite-components/dist/components/calcite-navigation-logo";
 import "@esri/calcite-components/dist/components/calcite-navigation-user";
 import "@esri/calcite-components/dist/components/calcite-shell";
+import "@esri/calcite-components/dist/components/calcite-panel";
 import "@esri/calcite-components/dist/components/calcite-menu";
 import "@esri/calcite-components/dist/components/calcite-menu-item";
 import "@esri/calcite-components/dist/components/calcite-dialog";
@@ -29,6 +30,7 @@ import "@esri/calcite-components/dist/components/calcite-dropdown-item";
 import "@esri/calcite-components/dist/components/calcite-action-pad";
 import "@esri/calcite-components/dist/components/calcite-action";
 import "@esri/calcite-components/dist/components/calcite-action-group";
+import "@esri/calcite-components/dist/components/calcite-action-bar";
 import "@esri/calcite-components/dist/components/calcite-tooltip";
 import "@esri/calcite-components/dist/components/calcite-link";
 import "@esri/calcite-components/dist/components/calcite-popover";
@@ -59,8 +61,10 @@ import IdentityManager from "@arcgis/core/identity/IdentityManager";
 
 // import group layer
 import GroupLayer from "@arcgis/core/layers/GroupLayer";
+// import useState from 'react';
+import SlidingPanel from "react-sliding-side-panel";
+import "react-sliding-side-panel/lib/index.css";
 
-// Create a root React component
 const root = createRoot(document.getElementById("root"));
 root.render(
   <StrictMode>
@@ -142,325 +146,383 @@ root.render(
           theme="dark"
           id="attributionTooltip"
           // closeOnClick
-        >
-        </calcite-tooltip>
+        ></calcite-tooltip>
       </div>
-      {/* Map */}
-      <arcgis-map
-        itemId="1d9aec5e950f46f9a35a0d399e7e0cf1"
-        center="-83.74, 42.27"
-        zoom="15"
-        onarcgisViewReadyChange={onArcgisViewReadyChange}
-      >
-        {/* Actions */}
-        <arcgis-placement position="top-left">
-          <calcite-action-pad expanded="true" overlayPositioning="fixed">
-            {/* <calcite-tree selectionMode="none">
-              <calcite-tree-item>
-                Edit
-                <calcite-tree slot="children">
-                  <calcite-tree-item iconStart="">
-                    <calcite-action
-                      text="Define Solar Array"
-                      icon="polygon"
-                      id="AddAction"
-                      // focusTrapDisabled
-                    ></calcite-action>
-                  </calcite-tree-item>
-                  <calcite-tree-item>B</calcite-tree-item>
-                </calcite-tree>
-              </calcite-tree-item>
-              <calcite-tree-item>C</calcite-tree-item>
-            </calcite-tree> */}
-            {/* Edit Action */}
-            <calcite-action-group label="Edit" columns="2">
-              <calcite-action
-                text="Define Solar Array"
-                icon="polygon"
-                id="AddAction"
-                // focusTrapDisabled
-              ></calcite-action>
+      {/* Action Bar */}
+      <calcite-shell-panel position="start" slot="panel-start">
+        <calcite-action-bar slot="action-bar" overflowActionsDisabled expanded>
+          {/* Edit Action */}
+          <calcite-action-group label="Edit">
+            <calcite-action
+              text="Define Solar Array"
+              icon="polygon"
+              id="AddAction"
+              onClick={() => {
+                document.getElementById("my-expand").toggle();
+              }}
+              // focusTrapDisabled
+            ></calcite-action>
+            <calcite-action
+              text="Add Clipping Features"
+              icon="crop"
+              id="CropAction"
+            ></calcite-action>
+            <calcite-popover
+              reference-element="CropAction"
+              label="Crop"
+              overlayPositioning="fixed"
+              autoClose
+            >
+              <calcite-action-pad expandDisabled>
+                <calcite-action
+                  id="DetectBuildingFootprints"
+                  text="Detect Building Footprints"
+                  icon="footprint"
+                  onClick={addBuildingFootprints}
+                ></calcite-action>
+                <calcite-action
+                  id="DetectRoads"
+                  text="Road Segments"
+                  icon="curve"
+                  onClick={addRoads}
+                ></calcite-action>
+                <calcite-action
+                  id="SelfDefinedPolyline"
+                  text="Self-defined Polyline"
+                  icon="line"
+                  onClick={selfDefinedPolyline}
+                ></calcite-action>
+                <calcite-action
+                  id="SelfDefinedPolygon"
+                  text="Self-defined Polygon"
+                  icon="polygon"
+                  onClick={selfDefinedPolygon}
+                ></calcite-action>
+              </calcite-action-pad>
+            </calcite-popover>
+            <calcite-action
+              id="EditBufferAction"
+              text="Create/Edit Buffers"
+              icon="rings"
+              onClick={BufferActionclicked}
+            >
               <calcite-popover
-                reference-element="AddAction"
-                label="Add"
+                id="EditBufferPopover"
+                reference-element="EditBufferAction"
+                label="Buffer"
                 overlayPositioning="fixed"
-                closable
-              >
-                <arcgis-sketch
-                  id="my-sketch"
-                  creationMode="single"
-                  onarcgisCreate={sketchCreated}
-                ></arcgis-sketch>
-              </calcite-popover>
-              <calcite-action
-                text="Add Clipping Features"
-                icon="crop"
-                id="CropAction"
-              ></calcite-action>
-              <calcite-popover
-                reference-element="CropAction"
-                label="Crop"
-                overlayPositioning="fixed"
+                triggerDisabled
                 autoClose
               >
-                <calcite-action-pad expandDisabled expanded>
-                  <calcite-action
-                    text="Detect Building Footprints"
-                    icon="footprint"
-                    onClick={addBuildingFootprints}
-                  ></calcite-action>
-                  <calcite-action
-                    text="Road Segments"
-                    icon="curve"
-                    onClick={addRoads}
-                  ></calcite-action>
-                  <calcite-action
-                    text="Self-defined Polyline"
-                    icon="line"
-                    onClick={selfDefinedPolyline}
-                  ></calcite-action>
-                  <calcite-action
-                    text="Self-defined Polygon"
-                    icon="polygon"
-                    onClick={selfDefinedPolygon}
-                  ></calcite-action>
-                </calcite-action-pad>
+                <calcite-label alignment="center">
+                  Buffer Distance
+                  <calcite-slider
+                    id="BufferSlider"
+                    min="0"
+                    max="100"
+                    step="1"
+                    value="50"
+                    label-handles
+                    label-ticks
+                    min-label="1"
+                    max-label="100"
+                  ></calcite-slider>
+                </calcite-label>
               </calcite-popover>
-              <calcite-action
-                id="EditBufferAction"
-                text="Create/Edit Buffers"
-                icon="rings"
-                onClick={BufferActionclicked}
-              >
-                <calcite-popover
-                  id="EditBufferPopover"
-                  reference-element="EditBufferAction"
-                  label="Buffer"
-                  overlayPositioning="fixed"
-                  triggerDisabled
-                  autoClose
-                >
-                  <calcite-label alignment="center">
-                    Buffer Distance
-                    <calcite-slider
-                      id="BufferSlider"
-                      min="0"
-                      max="100"
-                      step="1"
-                      value="50"
-                      label-handles
-                      label-ticks
-                      min-label="1"
-                      max-label="100"
-                    ></calcite-slider>
-                  </calcite-label>
-                </calcite-popover>
-              </calcite-action>
-              <calcite-action
-                text="View Clipped Results"
-                icon="view-visible"
-                onClick={clipResultClicked}
-              ></calcite-action>
-              <calcite-action
-                id="ClearAction"
-                text="Clear Solar Array"
-                icon="trash"
-                onClick={clearBtnClicked}
-                disabled
-              ></calcite-action>
-            </calcite-action-group>
+            </calcite-action>
+            <calcite-action
+              text="View Clipped Results"
+              icon="view-visible"
+              onClick={clipResultClicked}
+            ></calcite-action>
+            <calcite-action
+              text="Toggle Stats Table"
+              icon="dock-bottom"
+              onClick={
+                () => {
+                  document.querySelector("#bottom-panel").collapsed =
+                    !document.querySelector("#bottom-panel").collapsed;
+                }
+              }
+            ></calcite-action>
+            <calcite-action
+              id="ClearAction"
+              text="Clear Solar Array"
+              icon="trash"
+              onClick={clearBtnClicked}
+              disabled
+            ></calcite-action>
+          </calcite-action-group>
 
-            {/* Data Action */}
-            <calcite-action-group>
-              <calcite-action
-                text="Upload Layer"
-                icon="upload"
-                onClick={uploadActionClicked}
-              ></calcite-action>
-              <calcite-action
-                text="Edit Layer"
-                icon="pencil"
-                id="EditAction"
-              ></calcite-action>
-              <calcite-popover
-                reference-element="EditAction"
-                label="Edit"
-                overlayPositioning="fixed"
-                autoClose
-                // scale="l"
-              >
-                <arcgis-editor></arcgis-editor>
-              </calcite-popover>
-            </calcite-action-group>
+          {/* Data Action */}
+          <calcite-action-group>
+            <calcite-action
+              text="Upload Layer"
+              icon="upload"
+              onClick={uploadActionClicked}
+            ></calcite-action>
+            <calcite-action
+              text="Edit Layer"
+              icon="pencil"
+              id="EditAction"
+            ></calcite-action>
+            <calcite-popover
+              reference-element="EditAction"
+              label="Edit"
+              overlayPositioning="fixed"
+              autoClose
+              // scale="l"
+            >
+              <arcgis-editor></arcgis-editor>
+            </calcite-popover>
+          </calcite-action-group>
 
-            <calcite-action-group>
-              <calcite-action
-                text="Import from File"
-                icon="upload"
-                onClick={importBtnClicked}
-              ></calcite-action>
-              <calcite-action
-                id="ExportAction"
-                text="Export Results"
-                icon="download"
-                onClick={exportBtnClicked}
-                disabled
-              ></calcite-action>
-              
-            </calcite-action-group>
+          <calcite-action-group>
+            <calcite-action
+              text="Import from File"
+              icon="upload"
+              onClick={importBtnClicked}
+            ></calcite-action>
+            <calcite-action
+              id="ExportAction"
+              text="Export Results"
+              icon="download"
+              onClick={exportBtnClicked}
+              disabled
+            ></calcite-action>
+          </calcite-action-group>
 
-            <calcite-tooltip slot="expand-tooltip">
-              Toggle Action Bar
-            </calcite-tooltip>
-          </calcite-action-pad>
-        </arcgis-placement>
-
-        {/* Map Views */}
-        <arcgis-placement position="top-right">
-          <calcite-action-pad
-            expanded="false"
-            overlayPositioning="fixed"
-            id="map-views-pad"
+          <calcite-tooltip slot="expand-tooltip" placement="right">
+            Toggle Action Bar
+          </calcite-tooltip>
+        </calcite-action-bar>
+        {/* <calcite-panel heading="Layers" id="panel-start" closable>
+          <calcite-block
+            collapsible
+            heading="Symbology"
+            description="Select type, color, and transparency"
+            icon-start="map-pin"
           >
-            <calcite-action
-              text="Basemap"
-              icon="basemap"
-              id="BasemapAction"
-            ></calcite-action>
-            <calcite-popover
-              reference-element="BasemapAction"
-              label="Basemap"
+            <calcite-notice open>
+              <div slot="message">The viewers are going to love this</div>
+            </calcite-notice>
+          </calcite-block>
+        </calcite-panel> */}
+      </calcite-shell-panel>
+      {/* Map */}
+      <calcite-panel>
+        <arcgis-map
+          itemId="1d9aec5e950f46f9a35a0d399e7e0cf1"
+          center="-83.74, 42.27"
+          zoom="15"
+          onarcgisViewReadyChange={onArcgisViewReadyChange}
+        >
+          {/* Sketch Actions */}
+          <arcgis-expand position="top-left" id="my-expand">
+            <arcgis-sketch
+            id="my-sketch"
+            creationMode="single"
+            // referenceElement="AddAction"
+            onarcgisCreate={sketchCreated}
+            // position="top-left"
+            expanded
+          ></arcgis-sketch>
+          </arcgis-expand>
+          
+
+          {/* Map Views */}
+          <arcgis-placement position="top-right">
+            <calcite-action-pad
+              expanded="false"
               overlayPositioning="fixed"
-              autoClose
+              id="map-views-pad"
             >
-              <arcgis-basemap-gallery></arcgis-basemap-gallery>
-            </calcite-popover>
-            <calcite-action
-              text="Layer List"
-              icon="layers"
-              id="LayerListAction"
-            ></calcite-action>
-            <calcite-popover
-              reference-element="LayerListAction"
-              label="Layer List"
-              overlayPositioning="fixed"
-              autoClose
-            >
-              <arcgis-layer-list
-                dragEnabled
-              ></arcgis-layer-list>
-            </calcite-popover>
-            <calcite-action
-              text="Legend"
-              icon="legend"
-              id="LegendAction"
-            ></calcite-action>
-            <calcite-popover
-              reference-element="LegendAction"
-              label="Legend"
-              overlayPositioning="fixed"
-              autoClose
-            >
-              <arcgis-legend></arcgis-legend>
-            </calcite-popover>
-            <calcite-action
-              text="Measure Distance"
-              icon="measure-line"
-              id="MeasureDistanceAction"
-            ></calcite-action>
-            <calcite-popover
-              reference-element="MeasureDistanceAction"
-              label="Measure Distance"
-              overlayPositioning="fixed"
-              autoClose
-            >
-              <arcgis-distance-measurement-2d></arcgis-distance-measurement-2d>
-            </calcite-popover>
-            <calcite-action
-              text="Measure Area"
-              icon="measure-area"
-              id="MeasureAreaAction"
-            ></calcite-action>
-            <calcite-popover
-              reference-element="MeasureAreaAction"
-              label="Measure Area"
-              overlayPositioning="fixed"
-              autoClose
-            >
-              <arcgis-area-measurement-2d></arcgis-area-measurement-2d>
-            </calcite-popover>
-            {/* <calcite-tooltip slot="expand-tooltip">
+              <calcite-action
+                text="Basemap"
+                icon="basemap"
+                id="BasemapAction"
+              ></calcite-action>
+              <calcite-popover
+                reference-element="BasemapAction"
+                label="Basemap"
+                overlayPositioning="fixed"
+                autoClose
+              >
+                <arcgis-basemap-gallery></arcgis-basemap-gallery>
+              </calcite-popover>
+              <calcite-action
+                text="Layer List"
+                icon="layers"
+                id="LayerListAction"
+              ></calcite-action>
+              <calcite-popover
+                reference-element="LayerListAction"
+                label="Layer List"
+                overlayPositioning="fixed"
+                autoClose
+              >
+                <arcgis-layer-list dragEnabled></arcgis-layer-list>
+              </calcite-popover>
+              <calcite-action
+                text="Legend"
+                icon="legend"
+                id="LegendAction"
+              ></calcite-action>
+              <calcite-popover
+                reference-element="LegendAction"
+                label="Legend"
+                overlayPositioning="fixed"
+                autoClose
+              >
+                <arcgis-legend></arcgis-legend>
+              </calcite-popover>
+              <calcite-action
+                text="Measure Distance"
+                icon="measure-line"
+                id="MeasureDistanceAction"
+              ></calcite-action>
+              <calcite-popover
+                reference-element="MeasureDistanceAction"
+                label="Measure Distance"
+                overlayPositioning="fixed"
+                autoClose
+              >
+                <arcgis-distance-measurement-2d></arcgis-distance-measurement-2d>
+              </calcite-popover>
+              <calcite-action
+                text="Measure Area"
+                icon="measure-area"
+                id="MeasureAreaAction"
+              ></calcite-action>
+              <calcite-popover
+                reference-element="MeasureAreaAction"
+                label="Measure Area"
+                overlayPositioning="fixed"
+                autoClose
+              >
+                <arcgis-area-measurement-2d></arcgis-area-measurement-2d>
+              </calcite-popover>
+              {/* <calcite-tooltip slot="expand-tooltip">
               Toggle Action Bar
             </calcite-tooltip> */}
-          </calcite-action-pad>
-        </arcgis-placement>
-        <arcgis-placement position="mannual">
-          <calcite-fab
-            id="bottom-panel-toggle"
-            onClick={
-              () => {
-                document.querySelector("#bottom-panel").collapsed = !document.querySelector("#bottom-panel").collapsed;
-              }
-            }
-          ></calcite-fab>
-        </arcgis-placement>
-      </arcgis-map>
+            </calcite-action-pad>
+          </arcgis-placement>
+        </arcgis-map>
+      </calcite-panel>
 
       {/* Bottom Panel */}
-      <calcite-shell-panel
+      <calcite-panel
         id="bottom-panel"
         position="end"
-        slot="panel-bottom"
-        collapsed
-        resizable
+        // slot="panel-bottom"
+        closable
+        // collapsed
       >
-        Text
-      </calcite-shell-panel>
-    </calcite-shell>
+        <span slot="header-content">Stats Table</span>
+        <div>
+          <table>
+            <thead>
+              <tr>
+                <th>Feature</th>
+                <th>Value</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>Feature 1</td>
+                <td>Value 1</td>
+              </tr>
+              <tr>
+                <td>Feature 2</td>
+                <td>Value 2</td>
+              </tr>
+              <tr>
+                <td>Feature 3</td>
+                <td>Value 3</td>
+              </tr>
+              <tr>
+                <td>Feature 4</td>
+                <td>Value 4</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </calcite-panel>
+      {/* Dialogs */}
+      {/* About */}
+      <calcite-dialog heading="About" id="about-dialog" slot="dialogs" modal>
+        <calcite-label>
+          This is a web toolkit for solar panel planning.
+        </calcite-label>
+        <ul>
+          <li>
+            Start by adding a polygon to the map to represent a solar panel
+            array.
+          </li>
+          <li>
+            Use the "Edit Layers" button to edit the polygon or other layers on
+            the map.
+          </li>
+          <li>
+            You can also import and export GeoJSON files to save and share your
+            work.
+          </li>
+          <li>
+            Use the "Clear" button to remove all the graphics from the map.
+          </li>
+          <li>TBD...</li>
+        </ul>
+      </calcite-dialog>
+      {/* Alert */}
+      <calcite-alert
+        icon="smile"
+        id="buffer-alert"
+        scale="m"
+        autoCloseDuration="fast"
+        autoClose
+        slot="alerts"
+      >
+        <div slot="title">Buffer Editing</div>
+        <div slot="message">
+          Please select a feature from the <b>"Clipping Features"</b> Layer to
+          continue
+        </div>
+        <calcite-button slot="controls" appearance="clear">
+          Close
+        </calcite-button>
+      </calcite-alert>
+      {/* tooltips */}
+      <calcite-tooltip
+        referenceElement="DetectBuildingFootprints"
+        // placement="right"
+      >
+        <span>Select and detect building footprints within an area</span>
+      </calcite-tooltip>
+      <calcite-tooltip
+        referenceElement="DetectRoads"
+        // placement="right"
+      >
+        <span>Select and detect road segments within an area</span>
+      </calcite-tooltip>
+      <calcite-tooltip
+        referenceElement="SelfDefinedPolyline"
+        // placement="right"
+      >
+        <span>Create a self-defined polyline</span>
+      </calcite-tooltip>
+      <calcite-tooltip
+        referenceElement="SelfDefinedPolygon"
+        // placement="right"
+      >
+        <span>Create a self-defined polygon</span>
+      </calcite-tooltip>
 
-    {/* Dialogs */}
-    {/* About */}
-    <calcite-dialog modal heading="About" id="about-dialog" slot="dialog">
-      <calcite-label>
-        This is a web toolkit for solar panel planning.
-      </calcite-label>
-      <ul>
-        <li>
-          Start by adding a polygon to the map to represent a solar panel array.
-        </li>
-        <li>
-          Use the "Edit Layers" button to edit the polygon or other layers on
-          the map.
-        </li>
-        <li>
-          You can also import and export GeoJSON files to save and share your
-          work.
-        </li>
-        <li>Use the "Clear" button to remove all the graphics from the map.</li>
-        <li>TBD...</li>
-      </ul>
-    </calcite-dialog>
-    {/* Alert */}
-    <calcite-alert
-      icon="smile"
-      id="buffer-alert"
-      scale="m"
-      autoCloseDuration="fast"
-      autoClose
-    >
-      <div slot="title">Buffer Editing</div>
-      <div slot="message">
-        Please select a feature from the <b>"Clipping Features"</b> Layer to
-        continue
-      </div>
-      <calcite-button slot="controls" appearance="clear">
-        Close
-      </calcite-button>
-    </calcite-alert>
+    </calcite-shell>
   </StrictMode>
 );
 
 function onArcgisViewReadyChange(event) {
+
   // change the avatar
   const portal = new Portal();
   portal.authMode = "immediate";
@@ -547,7 +609,8 @@ function onArcgisViewReadyChange(event) {
   const attributionTooltip = document.getElementById("attributionTooltip");
   attributionTooltip.addEventListener("calciteTooltipBeforeOpen", (event) => {
     console.log("Tooltip before open", event);
-    document.getElementById("attributionTooltip").innerHTML = attributionWidget.attributionText
+    document.getElementById("attributionTooltip").innerHTML =
+      attributionWidget.attributionText;
   });
 }
 
@@ -939,7 +1002,9 @@ function selfDefinedPolyline() {
     // console.log("Polyline added", event.item);
     // if polyline layer does not exist in the selected features layer, create it
     if (
-      !selectedLayer.allLayers.find((layer) => layer.title === "Selected Polyline")
+      !selectedLayer.allLayers.find(
+        (layer) => layer.title === "Selected Polyline"
+      )
     ) {
       // get the added graphic
       // define the attributes
@@ -1003,7 +1068,9 @@ function selfDefinedPolyline() {
     }
     // add event listener for trigger action
     reactiveUtils.on(
-      () => view.popup, "trigger-action", (event) => {
+      () => view.popup,
+      "trigger-action",
+      (event) => {
         if (event.action.id === "delete-this") {
           const popUpFeature = view.popup.selectedFeature;
           // get the selected features layer
@@ -1016,7 +1083,7 @@ function selfDefinedPolyline() {
           view.popup.close();
         }
       }
-    )
+    );
   });
 }
 
@@ -1113,7 +1180,9 @@ function selfDefinedPolygon() {
     }
     // add event listener for trigger action
     reactiveUtils.on(
-      () => view.popup, "trigger-action", (event) => {
+      () => view.popup,
+      "trigger-action",
+      (event) => {
         if (event.action.id === "delete-this") {
           const popUpFeature = view.popup.selectedFeature;
           // get the selected features layer
@@ -1126,7 +1195,7 @@ function selfDefinedPolygon() {
           view.popup.close();
         }
       }
-    )
+    );
   });
 }
 
