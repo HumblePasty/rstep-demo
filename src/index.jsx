@@ -40,6 +40,10 @@ import "@esri/calcite-components/dist/components/calcite-tree";
 import "@esri/calcite-components/dist/components/calcite-tree-item";
 // fab
 import "@esri/calcite-components/dist/components/calcite-fab";
+// split button
+import "@esri/calcite-components/dist/components/calcite-split-button";
+// notice
+import "@esri/calcite-components/dist/components/calcite-notice";
 
 // Import map components
 import "@arcgis/map-components/dist/components/arcgis-map";
@@ -64,6 +68,7 @@ import GroupLayer from "@arcgis/core/layers/GroupLayer";
 // import useState from 'react';
 import SlidingPanel from "react-sliding-side-panel";
 import "react-sliding-side-panel/lib/index.css";
+import * as reactiveUtils from "@arcgis/core/core/reactiveUtils.js";
 
 const root = createRoot(document.getElementById("root"));
 root.render(
@@ -160,7 +165,6 @@ root.render(
               onClick={() => {
                 document.getElementById("my-expand").toggle();
               }}
-              // focusTrapDisabled
             ></calcite-action>
             <calcite-action
               text="Add Clipping Features"
@@ -184,8 +188,27 @@ root.render(
                   id="DetectRoads"
                   text="Road Segments"
                   icon="curve"
-                  onClick={addRoads}
                 ></calcite-action>
+                <calcite-popover
+                  reference-element="DetectRoads"
+                  label="Roads"
+                  autoClose
+                >
+                  <calcite-action-bar expandDisabled>
+                    <calcite-action
+                      text="Select by Extent"
+                      icon="extent"
+                      onClick={addRoads}
+                    ></calcite-action>
+                    <calcite-action
+                      text="Select by Clicking"
+                      icon="select"
+                      onClick={() => {
+                        document.getElementById("ClickRoadsNotice").open = true;
+                      }}
+                    ></calcite-action>
+                  </calcite-action-bar>
+                </calcite-popover>
                 <calcite-action
                   id="SelfDefinedPolyline"
                   text="Self-defined Polyline"
@@ -215,19 +238,28 @@ root.render(
                 autoClose
               >
                 <calcite-label alignment="center">
-                  Buffer Distance
+                  Buffer Distance (US feet)
                   <calcite-slider
                     id="BufferSlider"
                     min="0"
                     max="100"
                     step="1"
-                    value="50"
+                    value="0"
                     label-handles
                     label-ticks
                     min-label="1"
                     max-label="100"
                   ></calcite-slider>
                 </calcite-label>
+                <calcite-button
+                  appearance="solid"
+                  color="blue"
+                  scale="m"
+                  width="full"
+                  onClick={deleteBufferClicked}
+                >
+                  Delete Buffer
+                </calcite-button>
               </calcite-popover>
             </calcite-action>
             <calcite-action
@@ -238,12 +270,10 @@ root.render(
             <calcite-action
               text="Toggle Stats Table"
               icon="dock-bottom"
-              onClick={
-                () => {
-                  document.querySelector("#bottom-panel").collapsed =
-                    !document.querySelector("#bottom-panel").collapsed;
-                }
-              }
+              onClick={() => {
+                document.querySelector("#bottom-panel").collapsed =
+                  !document.querySelector("#bottom-panel").collapsed;
+              }}
             ></calcite-action>
             <calcite-action
               id="ClearAction"
@@ -320,15 +350,14 @@ root.render(
           {/* Sketch Actions */}
           <arcgis-expand position="top-left" id="my-expand">
             <arcgis-sketch
-            id="my-sketch"
-            creationMode="single"
-            // referenceElement="AddAction"
-            onarcgisCreate={sketchCreated}
-            // position="top-left"
-            expanded
-          ></arcgis-sketch>
+              id="my-sketch"
+              creationMode="single"
+              // referenceElement="AddAction"
+              onarcgisCreate={sketchCreated}
+              // position="top-left"
+              expanded
+            ></arcgis-sketch>
           </arcgis-expand>
-          
 
           {/* Map Views */}
           <arcgis-placement position="top-right">
@@ -411,12 +440,12 @@ root.render(
       </calcite-panel>
 
       {/* Bottom Panel */}
-      <calcite-panel
+      <calcite-shell-panel
         id="bottom-panel"
         position="end"
         // slot="panel-bottom"
-        closable
-        // collapsed
+        // closable
+        collapsed
       >
         <span slot="header-content">Stats Table</span>
         <div>
@@ -447,7 +476,7 @@ root.render(
             </tbody>
           </table>
         </div>
-      </calcite-panel>
+      </calcite-shell-panel>
       {/* Dialogs */}
       {/* About */}
       <calcite-dialog heading="About" id="about-dialog" slot="dialogs" modal>
@@ -473,7 +502,40 @@ root.render(
           <li>TBD...</li>
         </ul>
       </calcite-dialog>
+      {/* Notice */}
       {/* Alert */}
+      <calcite-alert
+        icon="information"
+        id="selectRoadsNotice"
+        kind="info"
+        slot="alerts"
+        placement="top"
+      >
+        <div slot="title"> Select road segments by extent</div>
+        <div slot="message"> Drag and draw a rectangle on the map</div>
+      </calcite-alert>
+      <calcite-alert
+        icon="information"
+        id="ClickRoadsNotice"
+        kind="info"
+        slot="alerts"
+        placement="top"
+      >
+        <div slot="title"> Select by Clicking</div>
+        <div slot="message">
+          {" "}
+          Press <i>Control</i> or <i>Shift</i> and click on road segements to
+          make selection
+        </div>
+        <calcite-action
+          scale="m"
+          icon="plus"
+          text="Add to Clipping Features"
+          text-enabled
+          slot="actions-end"
+          onClick={ClickingAddClicked}
+        ></calcite-action>
+      </calcite-alert>
       <calcite-alert
         icon="smile"
         id="buffer-alert"
@@ -500,6 +562,7 @@ root.render(
       </calcite-tooltip>
       <calcite-tooltip
         referenceElement="DetectRoads"
+        closeOnClick
         // placement="right"
       >
         <span>Select and detect road segments within an area</span>
@@ -516,10 +579,21 @@ root.render(
       >
         <span>Create a self-defined polygon</span>
       </calcite-tooltip>
-
     </calcite-shell>
   </StrictMode>
 );
+
+// import Color
+import Color from "@arcgis/core/Color.js";
+// simple line symbol
+import SimpleLineSymbol from "@arcgis/core/symbols/SimpleLineSymbol.js";
+// simple fill symbol
+import SimpleFillSymbol from "@arcgis/core/symbols/SimpleFillSymbol.js";
+// renderer
+import SimpleRenderer from "@arcgis/core/renderers/SimpleRenderer.js";
+
+// import query
+import Query from "@arcgis/core/rest/support/Query.js";
 
 function onArcgisViewReadyChange(event) {
 
@@ -608,10 +682,183 @@ function onArcgisViewReadyChange(event) {
   // show attribution
   const attributionTooltip = document.getElementById("attributionTooltip");
   attributionTooltip.addEventListener("calciteTooltipBeforeOpen", (event) => {
-    console.log("Tooltip before open", event);
+    // console.log("Tooltip before open", event);
     document.getElementById("attributionTooltip").innerHTML =
       attributionWidget.attributionText;
   });
+
+  // create a graphic layer for selection
+  const selectionLayer = new GraphicsLayer({
+    title: "Highlights",
+  });
+  map.add(selectionLayer);
+
+  let ctrl = false;
+  let shift = false;
+
+  const view = document.querySelector("arcgis-map").view;
+
+  // add event listener for key down
+  view.on("key-down", (event) => {
+    if (event.key === "Control") {
+      ctrl = true;
+    }
+    if (event.key === "Shift") {
+      shift = true;
+    }
+  });
+
+  // add event listener for key up
+  view.on("key-up", (event) => {
+    if (event.key === "Control") {
+      ctrl = false;
+    }
+    if (event.key === "Shift") {
+      shift = false;
+    }
+  });
+
+  // add event listener for view click
+  view.on("click", (event) => {
+    if (!ctrl && !shift) {
+      selectionLayer.removeAll();
+    }
+    else {
+      const roadLayer = map.allLayers.find(
+        (layer) => layer.title === "All Roads"
+      );
+      const point = view.toMap(event);
+      roadLayer.queryFeatures({
+        geometry: point,
+        spatialRelationship: "intersects",
+        distance: 5,
+        units: "meters",
+        returnGeometry: true,
+        returnQueryGeometry: true,
+        outFields: ["*"]
+      }).then((result) => {
+        // add the selected features to the selection layer
+        selectionLayer.addMany(result.features);
+      });
+    }
+  });
+
+}
+
+function ClickingAddClicked() {
+  // get the selected features layer
+  const highlightsLayer = document.querySelector("arcgis-map").map.allLayers.find(
+    (layer) => layer.title === "Highlights"
+  );
+  if (highlightsLayer.graphics.length === 0) {
+    // create a alert
+    alert("Please select road segments first");
+  }
+  // get the clipping features layer
+  const clippingLayer = document.querySelector("arcgis-map").map.allLayers.find(
+    (layer) => layer.title === "Clipping Features"
+  );
+  // create selected polyline if not exist
+  if (
+    !clippingLayer.allLayers.find(
+      (layer) => layer.title === "Selected Road Segments")
+  )
+  {
+    // get the added graphic
+    let graphics = highlightsLayer.graphics.toArray();
+    // define the attributes for each graphic
+    let i = 0;
+    graphics.forEach((graphic) => {
+      i++;
+      graphic.attributes = {
+        id: i,
+        name: `Selected Road Segment ${i}`,
+      };
+    });
+    console.log(graphics);
+    // create a action object
+    const deletAction = {
+      title: "Delete",
+      id: "delete-this",
+      className: "esri-icon-trash",
+    };
+
+    // get the selected features
+    const selectedRoads = new FeatureLayer({
+      source: [],
+      fields: [
+        {
+          name: "OBJECTID",
+          alias: "ID",
+          type: "oid",
+        },
+        {
+          name: "name",
+          alias: "Name",
+          type: "string",
+        },
+      ],
+      objectIdField: "OBJECTID",
+      title: "Selected Road Segments",
+      geometryType: "polyline",
+      // spatialReference: { wkid: 4326 },
+      popupTemplate: {
+        actions: [deletAction],
+        title: "{name}",
+        content: "This is a user-selected polyline",
+      },
+    });
+    // add the selected polyline to the selected features layer
+    clippingLayer.add(selectedRoads);
+    // create edits
+    const addRoadsEdits = {
+      addFeatures: graphics,
+    };
+    // apply edits
+    selectedRoads.applyEdits(addRoadsEdits);
+  }
+  else {
+    // get the selected polyline
+    const selectedRoads = clippingLayer.allLayers.find(
+      (layer) => layer.title === "Selected Road Segments"
+    );
+    // get the added graphic
+    let graphics = highlightsLayer.graphics.toArray();
+    // define the attributes for each graphic
+    let i = selectedRoads.source.length;
+    graphics.forEach((graphic) => {
+      i++;
+      graphic.attributes = {
+        id: i,
+        name: `Selected Road Segment ${i}`,
+      };
+    });
+    // create edits
+    const addRoadsEdits = {
+      addFeatures: graphics,
+    };
+    // apply edits
+    selectedRoads.applyEdits(addRoadsEdits);
+  }
+  // add event listener for trigger action
+  const view = document.querySelector("arcgis-map").view;
+  reactiveUtils.on(
+    () => view.popup,
+    "trigger-action",
+    (event) => {
+      if (event.action.id === "delete-this") {
+        const popUpFeature = view.popup.selectedFeature;
+        // get the selected features layer
+        const myLayer = popUpFeature.layer;
+        // apply edits
+        myLayer.applyEdits({
+          deleteFeatures: [popUpFeature],
+        });
+        // close the popup
+        view.popup.close();
+      }
+    }
+  );
 }
 
 // function for log out
@@ -822,8 +1069,6 @@ function sketchCreated(event) {
     // document.querySelector("#my-sketch").cancel();
   });
 }
-// import query
-import Query from "@arcgis/core/rest/support/Query.js";
 // import GraphicsLayerView
 
 function RoadActionclicked() {
@@ -920,13 +1165,16 @@ function addRoads() {
     updateOnGraphicClick: true,
   });
 
+  // open the notice
+  document.getElementById("selectRoadsNotice").open = true;
+
   // start the sketch
   roadSketch.create("rectangle");
 
   // add event listener for graphics change
   roadSketch.layer.graphics.on("after-add", (event) => {
-    // log the coordinates of the graphic
-    // console.log(event.item.geometry);
+    // close the notice
+    document.getElementById("selectRoadsNotice").open = false;
     // get the added graphic
     const graphic = event.item;
     // get the road layer
@@ -937,6 +1185,14 @@ function addRoads() {
     const query = roadLayer.createQuery();
     query.geometry = graphic.geometry;
     query.spatialRelationship = "intersects";
+    var myTemplate = roadLayer.popupTemplate;
+    myTemplate.actions = [
+      {
+        id: "delete-this",
+        title: "Delete",
+        className: "esri-icon-trash",
+      }
+    ]
     roadLayer.queryFeatures(query).then((result) => {
       const selectedFeaturesLayer = map.allLayers.find(
         (layer) => layer.title === "Clipping Features"
@@ -955,7 +1211,7 @@ function addRoads() {
           title: "Selected Roads",
           geometryType: result.geometryType,
           renderer: roadLayer.renderer,
-          popupTemplate: roadLayer.popupTemplate,
+          popupTemplate: myTemplate,
         });
         // console.log("Selected layer created");
         // add the selected roads to the selected features layer
@@ -972,9 +1228,26 @@ function addRoads() {
       }
     });
   });
-}
 
-import * as reactiveUtils from "@arcgis/core/core/reactiveUtils.js";
+  // add event listener for trigger action
+  reactiveUtils.on(
+    () => view.popup,
+    "trigger-action",
+    (event) => {
+      if (event.action.id === "delete-this") {
+        const popUpFeature = view.popup.selectedFeature;
+        // get the selected features layer
+        const myLayer = popUpFeature.layer;
+        // apply edits
+        myLayer.applyEdits({
+          deleteFeatures: [popUpFeature],
+        });
+        // close the popup
+        view.popup.close();
+      }
+    }
+  );
+}
 
 function selfDefinedPolyline() {
   // get the current view
@@ -1208,7 +1481,6 @@ function BufferActionclicked() {
     BufferEditPopOver.open = false;
     return;
   }
-  // get the current view
   const view = document.querySelector("arcgis-map").view;
   // create a buffer layer if it does not exist
   if (!view.map.allLayers.find((layer) => layer.title === "Buffers")) {
@@ -1220,12 +1492,30 @@ function BufferActionclicked() {
   // if there is no popup, raise an alert
   // popup={}
   if (Object.keys(view.popup).length === 0 || view.popup.visible === false) {
-    console.log("No popup");
+    // console.log("No popup");
     // bring up an alert
     document.querySelector("#buffer-alert").open = true;
   } else {
     // open the buffer popover
     BufferEditPopOver.open = true;
+    // get the selected features of the popup
+    const popupFeature = view.popup.features[0];
+    // get the buffer layer
+    const bufferLayer = view.map.allLayers.find(
+      (layer) => layer.title === "Buffers"
+    );
+    // find the associated buffer graphic
+    const bufferFeature = bufferLayer.graphics.find(
+      (graphic) => graphic.attributes.associatedFeatureID === popupFeature.attributes.OBJECTID
+    );
+    // if the buffer graphic exists
+    if (bufferFeature) {
+      // console.log(bufferFeature);
+      // get the buffer slider
+      const bufferSlider = document.querySelector("#BufferSlider");
+      // set the slider value to the buffer distance
+      bufferSlider.value = bufferFeature.attributes.bufferDistance;
+    }
   }
 }
 
@@ -1235,63 +1525,166 @@ function bufferSliderChange(event) {
   const view = document.querySelector("arcgis-map").view;
   // get the popup features
   const popupFeatures = view.popup.features;
-  // get the selected features layer
-  const selectedLayer = view.map.allLayers.find(
-    (layer) => layer.title === "Clipping Features"
-  );
   // get the buffer layer
   const bufferLayer = view.map.allLayers.find(
     (layer) => layer.title === "Buffers"
   );
   // get the buffer slider value
   var sliderValue = event.target.value;
-  // create a buffer around the selected features
-  const bufferGraphics = popupFeatures.map((feature) => {
-    const geometry = feature.geometry.clone();
-    const bufferGeometry = bufferOperator.execute(geometry, sliderValue);
-    return new Graphic({
-      geometry: bufferGeometry,
-      symbol: {
-        type: "simple-fill",
-        color: [0, 0, 0, 0.5],
-        outline: {
-          color: [0, 0, 0, 1],
-          width: 1,
+  // get the selected features
+  const popupFeature = view.popup.features[0];
+  // find the associated buffer graphic
+  const bufferGraphic = bufferLayer.graphics.find(
+    (graphic) => graphic.attributes.associatedFeatureID === popupFeature.attributes.OBJECTID
+  );
+  // if the buffer graphic exists
+  if (bufferGraphic) {
+    // clear the buffer graphic
+    bufferLayer.remove(bufferGraphic);
+    // create a new buffer graphic
+    const bufferGraphics = popupFeatures.map((feature) => {
+      const geometry = feature.geometry.clone();
+      const options = {
+        unit: "feet",
+      };
+      const bufferGeometry = bufferOperator.execute(
+        geometry,
+        sliderValue,
+        options
+      );
+      return new Graphic({
+        geometry: bufferGeometry,
+        symbol: {
+          type: "simple-fill",
+          color: [0, 0, 0, 0.5],
+          outline: {
+            color: [0, 0, 0, 1],
+            width: 1,
+          },
         },
-      },
+        attributes: {
+          associatedFeatureID: feature.attributes.OBJECTID,
+          bufferDistance: sliderValue,
+          bufferUnit: options.unit,
+        },
+      });
     });
-  });
+    // add the buffer graphics to the buffer layer
+    bufferLayer.addMany(bufferGraphics);
+  } else {
+    // create a buffer around the selected features
+    const bufferGraphics = popupFeatures.map((feature) => {
+      const geometry = feature.geometry.clone();
+      const options = {
+        unit: "feet",
+      };
+      const bufferGeometry = bufferOperator.execute(
+        geometry,
+        sliderValue,
+        options
+      );
+      return new Graphic({
+        geometry: bufferGeometry,
+        symbol: {
+          type: "simple-fill",
+          color: [0, 0, 0, 0.5],
+          outline: {
+            color: [0, 0, 0, 1],
+            width: 1,
+          },
+        },
+        attributes: {
+          associatedFeatureID: feature.attributes.OBJECTID,
+          bufferDistance: sliderValue,
+          bufferUnit: options.unit,
+        },
+      });
+    });
 
-  // add the buffer graphics to the buffer layer
-  bufferLayer.addMany(bufferGraphics);
+    // add the buffer graphics to the buffer layer
+    bufferLayer.addMany(bufferGraphics);
+  }
+}
+
+function deleteBufferClicked() {
+  // get the current view
+  const view = document.querySelector("arcgis-map").view;
+  // get the buffer layer
+  const bufferLayer = view.map.allLayers.find(
+    (layer) => layer.title === "Buffers"
+  );
+  // get the selected features
+  const popupFeature = view.popup.features[0];
+  // find the associated buffer graphic
+  const bufferGraphic = bufferLayer.graphics.find(
+    (graphic) => graphic.attributes.associatedFeatureID === popupFeature.attributes.OBJECTID
+  );
+  // if the buffer graphic exists
+  if (bufferGraphic) {
+    // clear the buffer graphic
+    bufferLayer.remove(bufferGraphic);
+  }
 }
 
 // clip opeator
 import * as differenceOperator from "@arcgis/core/geometry/operators/differenceOperator.js";
+// import * as unionTypes from "@arcgis/core/unionTypes.js";
 
 // on clip result action clicked
 function clipResultClicked() {
-  // get the sketch layer (solar array)
-  const sketchLayer = document.querySelector("#my-sketch").layer;
-  // get the buffers layer
-  const bufferLayer = document
-    .querySelector("arcgis-map")
-    .map.allLayers.find((layer) => layer.title === "Buffers");
-  // subtract the buffer graphics from the sketch graphics
-  const sketchGraphics = sketchLayer.graphics;
-  const bufferGraphics = bufferLayer.graphics;
-  // convert to polygon
-  const clippedGraphics = differenceOperator.execute(
-    sketchGraphics.items[0].geometry,
-    bufferGraphics.items[0].geometry
+  // get the current view
+  const view = document.querySelector("arcgis-map").view;
+  // get the buffer layer
+  const bufferLayer = view.map.allLayers.find(
+    (layer) => layer.title === "Buffers"
   );
-  console.log("Clipped Graphics", clippedGraphics);
-  // create a new layer for the clipped result
-  const clippedLayer = new GraphicsLayer({
-    title: "Clipped Result",
-  });
-  // add the clipped graphics to the clipped layer
-  clippedLayer.addMany(clippedGraphics);
-  // add the clipped layer to the map
-  document.querySelector("arcgis-map").map.add(clippedLayer);
+  // get the solar array layer
+  const solarArrayLayer = view.map.allLayers.find(
+    (layer) => layer.title === "Solar Array"
+  );
+  // Ensure both layers exist
+  if (!bufferLayer || !solarArrayLayer) {
+    alert("Please create buffer and solar array layers first");
+    return;
+  }
+  const bufferUnions = unionOperator.executeMany(
+    bufferLayer.graphics.items.map((graphic) => graphic.geometry)
+  );
+  const solarArrayUnions = unionOperator.executeMany(
+    solarArrayLayer.graphics.items.map((graphic) => graphic.geometry)
+  );
+  // difference the solar array layer with the buffer layer
+  const clippedSolarArray = differenceOperator.execute(
+    solarArrayUnions,
+    bufferUnions
+  );
+  // create result layer if it does not exist
+  if (!view.map.allLayers.find((layer) => layer.title === "Clipped Solar Array")) {
+    const resultLayer = new GraphicsLayer({
+      title: "Clipped Solar Array",
+    });
+    // add the clipped solar array to the result layer
+    resultLayer.add(
+      new Graphic({
+        geometry: clippedSolarArray,
+        // symbol: solarArrayLayer.renderer.symbol.clone(),
+      })
+    );
+    // add the result layer to the map
+    view.map.add(resultLayer);
+  } else {
+    // get the result layer
+    const resultLayer = view.map.allLayers.find(
+      (layer) => layer.title === "Clipped Solar Array"
+    );
+    // clear the result layer
+    resultLayer.removeAll();
+    // add the clipped solar array to the result layer
+    resultLayer.add(
+      new Graphic({
+        geometry: clippedSolarArray,
+        // symbol: solarArrayLayer.renderer.symbol.clone(),
+      })
+    );
+  }
 }
