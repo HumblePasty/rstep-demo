@@ -263,7 +263,7 @@ root.render(
               </calcite-popover>
             </calcite-action>
             <calcite-action
-              text="View Clipped Results"
+              text="View/Update Clipped Results"
               icon="view-visible"
               onClick={clipResultClicked}
             ></calcite-action>
@@ -596,7 +596,6 @@ import SimpleRenderer from "@arcgis/core/renderers/SimpleRenderer.js";
 import Query from "@arcgis/core/rest/support/Query.js";
 
 function onArcgisViewReadyChange(event) {
-
   // change the avatar
   const portal = new Portal();
   portal.authMode = "immediate";
@@ -722,48 +721,48 @@ function onArcgisViewReadyChange(event) {
   view.on("click", (event) => {
     if (!ctrl && !shift) {
       selectionLayer.removeAll();
-    }
-    else {
+    } else {
       const roadLayer = map.allLayers.find(
         (layer) => layer.title === "All Roads"
       );
       const point = view.toMap(event);
-      roadLayer.queryFeatures({
-        geometry: point,
-        spatialRelationship: "intersects",
-        distance: 5,
-        units: "meters",
-        returnGeometry: true,
-        returnQueryGeometry: true,
-        outFields: ["*"]
-      }).then((result) => {
-        // add the selected features to the selection layer
-        selectionLayer.addMany(result.features);
-      });
+      roadLayer
+        .queryFeatures({
+          geometry: point,
+          spatialRelationship: "intersects",
+          distance: 5,
+          units: "meters",
+          returnGeometry: true,
+          returnQueryGeometry: true,
+          outFields: ["*"],
+        })
+        .then((result) => {
+          // add the selected features to the selection layer
+          selectionLayer.addMany(result.features);
+        });
     }
   });
-
 }
 
 function ClickingAddClicked() {
   // get the selected features layer
-  const highlightsLayer = document.querySelector("arcgis-map").map.allLayers.find(
-    (layer) => layer.title === "Highlights"
-  );
+  const highlightsLayer = document
+    .querySelector("arcgis-map")
+    .map.allLayers.find((layer) => layer.title === "Highlights");
   if (highlightsLayer.graphics.length === 0) {
     // create a alert
     alert("Please select road segments first");
   }
   // get the clipping features layer
-  const clippingLayer = document.querySelector("arcgis-map").map.allLayers.find(
-    (layer) => layer.title === "Clipping Features"
-  );
+  const clippingLayer = document
+    .querySelector("arcgis-map")
+    .map.allLayers.find((layer) => layer.title === "Clipping Features");
   // create selected polyline if not exist
   if (
     !clippingLayer.allLayers.find(
-      (layer) => layer.title === "Selected Road Segments")
-  )
-  {
+      (layer) => layer.title === "Selected Road Segments"
+    )
+  ) {
     // get the added graphic
     let graphics = highlightsLayer.graphics.toArray();
     // define the attributes for each graphic
@@ -816,8 +815,7 @@ function ClickingAddClicked() {
     };
     // apply edits
     selectedRoads.applyEdits(addRoadsEdits);
-  }
-  else {
+  } else {
     // get the selected polyline
     const selectedRoads = clippingLayer.allLayers.find(
       (layer) => layer.title === "Selected Road Segments"
@@ -1191,8 +1189,8 @@ function addRoads() {
         id: "delete-this",
         title: "Delete",
         className: "esri-icon-trash",
-      }
-    ]
+      },
+    ];
     roadLayer.queryFeatures(query).then((result) => {
       const selectedFeaturesLayer = map.allLayers.find(
         (layer) => layer.title === "Clipping Features"
@@ -1506,7 +1504,9 @@ function BufferActionclicked() {
     );
     // find the associated buffer graphic
     const bufferFeature = bufferLayer.graphics.find(
-      (graphic) => graphic.attributes.associatedFeatureID === popupFeature.attributes.OBJECTID
+      (graphic) =>
+        graphic.attributes.associatedFeatureID ===
+        popupFeature.attributes.OBJECTID
     );
     // if the buffer graphic exists
     if (bufferFeature) {
@@ -1535,7 +1535,9 @@ function bufferSliderChange(event) {
   const popupFeature = view.popup.features[0];
   // find the associated buffer graphic
   const bufferGraphic = bufferLayer.graphics.find(
-    (graphic) => graphic.attributes.associatedFeatureID === popupFeature.attributes.OBJECTID
+    (graphic) =>
+      graphic.attributes.associatedFeatureID ===
+      popupFeature.attributes.OBJECTID
   );
   // if the buffer graphic exists
   if (bufferGraphic) {
@@ -1617,7 +1619,9 @@ function deleteBufferClicked() {
   const popupFeature = view.popup.features[0];
   // find the associated buffer graphic
   const bufferGraphic = bufferLayer.graphics.find(
-    (graphic) => graphic.attributes.associatedFeatureID === popupFeature.attributes.OBJECTID
+    (graphic) =>
+      graphic.attributes.associatedFeatureID ===
+      popupFeature.attributes.OBJECTID
   );
   // if the buffer graphic exists
   if (bufferGraphic) {
@@ -1659,7 +1663,9 @@ function clipResultClicked() {
     bufferUnions
   );
   // create result layer if it does not exist
-  if (!view.map.allLayers.find((layer) => layer.title === "Clipped Solar Array")) {
+  if (
+    !view.map.allLayers.find((layer) => layer.title === "Clipped Solar Array")
+  ) {
     const resultLayer = new GraphicsLayer({
       title: "Clipped Solar Array",
     });
@@ -1684,6 +1690,14 @@ function clipResultClicked() {
       new Graphic({
         geometry: clippedSolarArray,
         // symbol: solarArrayLayer.renderer.symbol.clone(),
+        symbol: {
+          type: "simple-fill",
+          color: "blue",
+          outline: {
+            color: [0, 0, 0, 1],
+            width: 1,
+          },
+        }
       })
     );
   }
