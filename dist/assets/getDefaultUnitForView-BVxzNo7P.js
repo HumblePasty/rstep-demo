@@ -1,0 +1,1 @@
+import{R as l,b9 as s}from"./index-BI30NJEZ.js";function c(e){var i,a;const t="metric";if(e==null)return t;const r=e.map,n=(r&&"portalItem"in r?(i=r.portalItem)==null?void 0:i.portal:null)??l.getDefault();switch(((a=n.user)==null?void 0:a.units)??n.units){case t:return t;case"english":return"imperial"}return s(e.spatialReference)??t}export{c as e};

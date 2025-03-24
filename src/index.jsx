@@ -196,11 +196,13 @@ root.render(
                 >
                   <calcite-action-bar expandDisabled>
                     <calcite-action
+                      id="selectRoadsbyExtent"
                       text="Select by Extent"
                       icon="extent"
                       onClick={addRoads}
                     ></calcite-action>
                     <calcite-action
+                      id="selectRoadsbyClick"
                       text="Select by Clicking"
                       icon="select"
                       onClick={() => {
@@ -543,12 +545,29 @@ root.render(
         autoCloseDuration="fast"
         autoClose
         slot="alerts"
+        placement="top"
       >
         <div slot="title">Buffer Editing</div>
         <div slot="message">
           Please select a feature from the <b>"Clipping Features"</b> Layer to
           continue
         </div>
+        <calcite-button slot="controls" appearance="clear">
+          Close
+        </calcite-button>
+      </calcite-alert>
+      <calcite-alert
+        icon="frown"
+        id="result-alert"
+        scale="m"
+        autoCloseDuration="fast"
+        autoClose
+        slot="alerts"
+        kind="warning"
+        placement="top"
+      >
+        <div slot="title">Clipped results</div>
+        <div slot="message">Please create buffer and solar array layers first</div>
         <calcite-button slot="controls" appearance="clear">
           Close
         </calcite-button>
@@ -1648,7 +1667,7 @@ function clipResultClicked() {
   );
   // Ensure both layers exist
   if (!bufferLayer || !solarArrayLayer) {
-    alert("Please create buffer and solar array layers first");
+    document.querySelector("#result-alert").open = true;
     return;
   }
   const bufferUnions = unionOperator.executeMany(

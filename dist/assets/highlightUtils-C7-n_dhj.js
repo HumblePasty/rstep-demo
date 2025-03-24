@@ -1,0 +1,1 @@
+import{H as o}from"./languageUtils-CXZ9vZDZ.js";import{m as n,ak as e}from"./index-BI30NJEZ.js";function f(r){return i(r)||o(r)?[r]:e.isCollection(r)?r.toArray():Array.isArray(r)?r:s}function i(r){return typeof r=="number"||typeof r=="string"}const s=[],m=n();export{f as n,m as s};
