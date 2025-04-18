@@ -105,8 +105,8 @@ root.render(
           <calcite-navigation-user
             id="header-user"
             // slot="user"
-            full-name="Jane Doe"
-            username="jane.doe"
+            full-name="User"
+            username="username"
             slot="trigger"
           ></calcite-navigation-user>
           <calcite-dropdown-group
@@ -273,8 +273,8 @@ root.render(
               text="Toggle Stats Table"
               icon="dock-bottom"
               onClick={() => {
-                document.querySelector("#bottom-panel").collapsed =
-                  !document.querySelector("#bottom-panel").collapsed;
+                document.querySelector("#stats-dialog").open =
+                  !document.querySelector("#stats-dialog").open;
               }}
             ></calcite-action>
             <calcite-action
@@ -344,7 +344,7 @@ root.render(
       {/* Map */}
       <calcite-panel>
         <arcgis-map
-          itemId="1d9aec5e950f46f9a35a0d399e7e0cf1"
+          // itemId="1d9aec5e950f46f9a35a0d399e7e0cf1"
           center="-83.74, 42.27"
           zoom="15"
           onarcgisViewReadyChange={onArcgisViewReadyChange}
@@ -441,68 +441,84 @@ root.render(
         </arcgis-map>
       </calcite-panel>
 
-      {/* Bottom Panel */}
-      <calcite-shell-panel
-        id="bottom-panel"
-        position="end"
-        // slot="panel-bottom"
-        // closable
-        collapsed
-      >
-        <span slot="header-content">Stats Table</span>
-        <div>
-          <table>
-            <thead>
-              <tr>
-                <th>Feature</th>
-                <th>Value</th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr>
-                <td>Feature 1</td>
-                <td>Value 1</td>
-              </tr>
-              <tr>
-                <td>Feature 2</td>
-                <td>Value 2</td>
-              </tr>
-              <tr>
-                <td>Feature 3</td>
-                <td>Value 3</td>
-              </tr>
-              <tr>
-                <td>Feature 4</td>
-                <td>Value 4</td>
-              </tr>
-            </tbody>
-          </table>
-        </div>
-      </calcite-shell-panel>
       {/* Dialogs */}
       {/* About */}
       <calcite-dialog heading="About" id="about-dialog" slot="dialogs" modal>
         <calcite-label>
-          This is a web toolkit for solar panel planning.
+          This tool is an auxiliary tool developed as part of the DOE R-STEP project that aims to help solar developers
+          and local governments in Michigan to understand the potential for solar development in their communities.
+          <br></br>
+          <br></br>
+          This tool is designed to help users visualize and analyze the setback requirements caused by roads, 
+          transmission lines, buildings, and other features, in a user-friendly way. The ultimate goal is to help users
+          understand what the installed capacity of solar energy in their communities could be, and to help them make informed
+           decisions about solar development and lead to more efficient and effective solar siting discussions.
+          <br></br>
+          <br></br>
+          <b>
+            How to use this tool:
+          </b>
         </calcite-label>
         <ul>
           <li>
-            Start by adding a polygon to the map to represent a solar panel
-            array.
+            Start by defining one or more polygons with "<b>Define Solar Array</b>" on the map to represent solar
+            arrays.
           </li>
           <li>
-            Use the "Edit Layers" button to edit the polygon or other layers on
-            the map.
+            Explore "<b>Add Clipping Features</b>" to see how to add clipping features to the
+            map. You can add building footprints, road segments, and self-defined
+            polylines and polygons.
           </li>
           <li>
-            You can also import and export GeoJSON files to save and share your
-            work.
+            Use the "<b>Create/Edit Buffers</b>" to create a buffer around the selected
+            features. You can also delete the buffer.
           </li>
           <li>
-            Use the "Clear" button to remove all the graphics from the map.
+            To view the clipped results, click on "<b>View/Update Clipped Results</b>".
           </li>
-          <li>TBD...</li>
+          <li>
+            You can always clear the solar array by clicking on "<b>Clear Solar Array</b>".
+          </li>
+          <li>
+            To view the statistics of the solar array, click on "<b>Toggle Stats Table</b>".
+            This will show you the number of features, total area, distance to nearest
+            substation, distance to nearest transmission line, and perimeter.
+          </li>
+          <li>
+            You can also upload a layer to the map by clicking on "<b>Upload Layer</b>".
+          </li>
+          <li>
+            To edit the layer, click on "<b>Edit Layer</b>". This will open the ArcGIS
+            Editor widget.
+          </li>
+          <li>
+            You can also save your results by clicking on "<b>Export Results</b>".
+          </li>
+          <li>
+            To import a file, click on "<b>Import from File</b>". This will open the
+            file picker. Load your file and click on "Open". The file will be
+            loaded into the map.
+          </li>
+          <li>
+            Hope this tool helps you in your solar development journey!
+          </li>
         </ul>
+      </calcite-dialog>
+      {/* The Stats Table */}
+      <calcite-dialog
+        open="false"
+        width="s"
+        heading="Statistics"
+        id="stats-dialog"
+        placement="bottom-end"
+        drag-enabled
+        resizable
+      >
+        <p>
+          Get started by adding a polygon to the map to represent a solar panel.
+          <br></br>
+          The statistics will be displayed here.
+        </p>
       </calcite-dialog>
       {/* Notice */}
       {/* Alert */}
@@ -567,7 +583,9 @@ root.render(
         placement="top"
       >
         <div slot="title">Clipped results</div>
-        <div slot="message">Please create buffer and solar array layers first</div>
+        <div slot="message">
+          Please create buffer and solar array layers first
+        </div>
         <calcite-button slot="controls" appearance="clear">
           Close
         </calcite-button>
@@ -613,6 +631,30 @@ import SimpleRenderer from "@arcgis/core/renderers/SimpleRenderer.js";
 
 // import query
 import Query from "@arcgis/core/rest/support/Query.js";
+import * as geodesicUtils from "@arcgis/core/geometry/support/geodesicUtils.js";
+import * as geodeticAreaOperator from "@arcgis/core/geometry/operators/geodeticAreaOperator.js";
+import * as projectOperator from "@arcgis/core/geometry/operators/projectOperator.js";
+import { SpatialReference } from "@arcgis/core/geometry";
+
+// import union operation
+import * as unionOperator from "@arcgis/core/geometry/operators/unionOperator.js";
+// add buffer
+import * as bufferOperator from "@arcgis/core/geometry/operators/bufferOperator.js";
+import * as centroidOperator from "@arcgis/core/geometry/operators/centroidOperator.js";
+import * as geodeticDistanceOperator from "@arcgis/core/geometry/operators/geodeticDistanceOperator.js";
+import * as geodesicProximityOperator from "@arcgis/core/geometry/operators/geodesicProximityOperator.js";
+import * as lengthOperator from "@arcgis/core/geometry/operators/lengthOperator.js";
+
+import TopFeaturesQuery from "@arcgis/core/rest/support/TopFeaturesQuery.js";
+import TopFilter from "@arcgis/core/rest/support/TopFilter.js";
+
+// import esri request
+import esriRequest from "@arcgis/core/request.js";
+// esri graphic
+import Graphic from "@arcgis/core/Graphic.js";
+// esri feature layer
+import FeatureLayer from "@arcgis/core/layers/FeatureLayer.js";
+import TileLayer from "@arcgis/core/layers/TileLayer.js";
 
 function onArcgisViewReadyChange(event) {
   // change the avatar
@@ -634,22 +676,6 @@ function onArcgisViewReadyChange(event) {
 
   // Adjust the visibilities of the layers
   const map = event.target.map;
-  map.allLayers.forEach((layer) => {
-    if (layer.title === "Regrid_Nationwide_Parcel_Boundaries_May24") {
-      layer.visible = false;
-    }
-    if (layer.title === "Michigan") {
-      layer.visible = false;
-    }
-    if (layer.title === "Michigan Counties") {
-      layer.visible = false;
-    }
-  });
-  // there are two substation layers, delete the one that is not needed
-  const substationLayer = map.allLayers.find(
-    (layer) => layer.title === "Substations"
-  );
-  map.remove(substationLayer);
 
   // change the name of the sketch layer
   const sketchLayer = document.querySelector("#my-sketch").layer;
@@ -663,16 +689,75 @@ function onArcgisViewReadyChange(event) {
     layers: [],
   });
 
-  // get all the layers except the sketch layer or a type of
-  const baseLayers = map.allLayers.filter(
-    (layer) =>
-      layer.title !== "Solar Array" &&
-      layer.title !== "World Topographic Map" &&
-      layer.title !== "World Hillshade"
-  );
+  // add layers to the group layer
+  // substation layer
+  const substationsLayer = new FeatureLayer({
+    url: "https://services6.arcgis.com/b0gOZ1Tb5FUNjEkv/arcgis/rest/services/R_STEP_Base_Layers_WFL1/FeatureServer/0",
+    title: "Substations",
+    outFields: ["*"],
+    popupTemplate: {
+      title: "{Name}",
+      content: "{*}",
+    },
+  });
+  // add to solar data layer
+  solarDataLayer.add(substationsLayer);
 
-  // add the layers to the base data layer
-  solarDataLayer.addMany(baseLayers);
+  // Transmission Line Layer
+  const transmissionLineLayer = new FeatureLayer({
+    url: "https://services2.arcgis.com/FiaPA4ga0iQKduv3/arcgis/rest/services/US_Electric_Power_Transmission_Lines/FeatureServer/0",
+    title: "Transmission_Lines",
+    outFields: ["*"],
+    popupTemplate: {
+      title: "{Name}",
+      content: "{*}",
+    },
+  });
+  // add to solar data layer
+  solarDataLayer.add(transmissionLineLayer);
+
+  // // Michigan bound
+  // const michiganBoundLayer = new FeatureLayer({
+  //   url: "https://services6.arcgis.com/b0gOZ1Tb5FUNjEkv/arcgis/rest/services/R_STEP_Base_Layers_WFL1/FeatureServer/3",
+  //   title: "Michigan",
+  //   outFields: ["*"],
+  //   popupTemplate: {
+  //     title: "{Name}",
+  //     content: "{*}",
+  //   },
+  //   visible: false,
+  // });
+  // // add to solar data layer
+  // solarDataLayer.add(michiganBoundLayer);
+
+  // Michigan roads layer
+  const michiganRoadsLayer = new FeatureLayer({
+    url: "https://gisagocss.state.mi.us/arcgis/rest/services/OpenData/michigan_geographic_framework/MapServer/20",
+    title: "All Roads",
+    outFields: ["*"],
+    popupTemplate: {
+      title: "{Name}",
+      content: "{*}",
+    },
+  });
+  // add to solar data layer
+  solarDataLayer.add(michiganRoadsLayer);
+
+  // Regrid data
+  const regridLayer = new TileLayer({
+    url: "https://tiles.arcgis.com/tiles/KzeiCaQsMoeCfoCq/arcgis/rest/services/Regrid_Nationwide_Parcel_Boundaries_v1/MapServer",
+    title: "Parcel Layer",
+    outFields: ["*"],
+    popupTemplate: {
+      title: "{Name}",
+      content: "{*}",
+    },
+    visible: false,
+  });
+  // add to solar data layer
+  solarDataLayer.add(regridLayer);
+
+  // add the solar data layer to the map
   map.add(solarDataLayer);
 
   // create a selected group layer
@@ -760,6 +845,169 @@ function onArcgisViewReadyChange(event) {
           selectionLayer.addMany(result.features);
         });
     }
+  });
+
+  // listen the sketch change of sketch layer for stats table
+  sketchLayer.graphics.on("after-changes", async (event) => {
+    // get the stats table
+    const statsDialog = document.querySelector("#stats-dialog");
+    // get the graphics from the sketch layer
+    const graphics = sketchLayer.graphics;
+    const numberOfFeatures = graphics.length;
+    // calculate area
+    if (!geodeticAreaOperator.isLoaded()) {
+      await geodeticAreaOperator.load();
+    }
+    const geodesticArea = geodeticAreaOperator.execute(
+      unionOperator.executeMany(
+        graphics.items.map((graphic) => graphic.geometry)
+      ),
+      { units: "square-feet" }
+    );
+    // get the centroid of the solar array
+    const centroid = centroidOperator.execute(
+      unionOperator.executeMany(
+        graphics.items.map((graphic) => graphic.geometry)
+      )
+    );
+    // calculate distance to nearest substation
+    const substationLayer = map.allLayers.find(
+      (layer) => layer.title === "Substations"
+    );
+    const transmissionLineLayer = map.allLayers.find(
+      (layer) => layer.title === "Transmission_Lines"
+    );
+    if (!geodeticDistanceOperator.isLoaded()) {
+      await geodeticDistanceOperator.load();
+    }
+    // geodeticDistanceOperator.supportsCurves = true;
+    if (!geodesicProximityOperator.isLoaded()) {
+      await geodesicProximityOperator.load();
+    }
+
+    // distance to nearest transmission line
+    const transmissionLineQuery = new Query();
+    transmissionLineQuery.geometry = unionOperator.executeMany(
+      graphics.items.map((graphic) => graphic.geometry)
+    );
+    transmissionLineQuery.spatialRelationship = "intersects";
+    transmissionLineQuery.distance = 20; // query within 80 km
+    transmissionLineQuery.units = "kilometers";
+    transmissionLineQuery.returnGeometry = true;
+    transmissionLineQuery.outFields = ["*"];
+
+    var distanceTrans = 0;
+
+    await transmissionLineLayer
+      .queryFeatures(transmissionLineQuery)
+      .then((result) => {
+        if (result.features.length > 0) {
+          // console.log(result.features);
+          const nearTransmissionLine = unionOperator.executeMany(
+            result.features.map((feature) => feature.geometry)
+          );
+          // console.log(nearestTransmissionLine);
+          // const closestPoint = geodesicProximityOperator.getNearestCoordinate(
+          //   nearestTransmissionLine.geometry,
+          //   unionOperator.executeMany(
+          //     graphics.items.map((graphic) => graphic.geometry)
+          //   ),
+          //   {
+          //     unit: "feet",
+          //   }
+          // ).coordinate
+          // console.log(closestPoint);
+          distanceTrans = geodeticDistanceOperator.execute(
+            unionOperator.executeMany(
+              graphics.items.map((graphic) => graphic.geometry)
+            ),
+            // The nearest point on the transmission line
+            nearTransmissionLine,
+            {
+              units: "feet",
+            }
+          );
+        }
+      });
+
+    // distance to nearest substation
+    const substationQuery = new Query();
+    substationQuery.geometry = centroid;
+    substationQuery.spatialRelationship = "intersects";
+    substationQuery.distance = 10; // query within 10 km
+    substationQuery.units = "kilometers";
+    substationQuery.returnGeometry = true;
+    substationQuery.outFields = ["*"];
+
+    var distanceSub = 0;
+
+    await substationLayer.queryFeatures(substationQuery).then((result) => {
+      if (result.features.length > 0) {
+        const nearestSubstation = result.features[0];
+        distanceSub = geodeticDistanceOperator.execute(
+          unionOperator.executeMany(
+            graphics.items.map((graphic) => graphic.geometry)
+          ),
+          nearestSubstation.geometry,
+          {
+            units: "feet",
+          }
+        );
+      }
+    });
+
+    // perimeter
+    const perimeters = graphics.items.map((graphic) => {
+      const polyline = new Polyline({
+        paths: graphic.geometry.rings,
+        spatialReference: graphic.geometry.spatialReference,
+      });
+      return lengthOperator.execute(polyline, {
+        unit: "feet",
+      });
+    });
+    const perimeter = perimeters.reduce((a, b) => a + b, 0);
+
+    statsDialog.innerHTML = `
+      <table style="width: 100%; border-collapse: collapse;">
+        <thead>
+          <tr style="background-color: #f2f2f2;">
+            <th style="padding: 8px; border: 1px solid #ddd; text-align: left;">Attribute</th>
+            <th style="padding: 8px; border: 1px solid #ddd; text-align: right;">Value</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td style="padding: 8px; border: 1px solid #ddd;">Number of Features</td>
+            <td style="padding: 8px; border: 1px solid #ddd; text-align: right;">${numberOfFeatures}</td>
+          </tr>
+          <tr>
+            <td style="padding: 8px; border: 1px solid #ddd;">Total Area (sqft)</td>
+            <td style="padding: 8px; border: 1px solid #ddd; text-align: right;">${geodesticArea.toFixed(
+              2
+            )}</td>
+          </tr>
+          <tr>
+            <td style="padding: 8px; border: 1px solid #ddd;">Distance to Nearest Substation (ft)</td>
+            <td style="padding: 8px; border: 1px solid #ddd; text-align: right;">${distanceSub.toFixed(
+              2
+            )}</td>
+          </tr>
+          <tr>
+            <td style="padding: 8px; border: 1px solid #ddd;">Distance to Nearest Transmission Line (ft)</td>
+            <td style="padding: 8px; border: 1px solid #ddd; text-align: right;">${distanceTrans.toFixed(
+              2
+            )}</td>
+          </tr>
+          <tr>
+            <td style="padding: 8px; border: 1px solid #ddd;">Perimeter (ft)</td>
+            <td style="padding: 8px; border: 1px solid #ddd; text-align: right;">${perimeter.toFixed(
+              2
+            )}</td>
+          </tr>
+        </tbody>
+      </table>
+    `;
   });
 }
 
@@ -886,13 +1134,6 @@ function logout() {
   // reload the page
   window.location.reload();
 }
-
-// import esri request
-import esriRequest from "@arcgis/core/request.js";
-// esri graphic
-import Graphic from "@arcgis/core/Graphic.js";
-// esri feature layer
-import FeatureLayer from "@arcgis/core/layers/FeatureLayer.js";
 
 function uploadActionClicked() {
   const portalUrl = "https://www.arcgis.com";
@@ -1159,11 +1400,6 @@ function addBuildingFootprints() {
     const graphic = event.item;
   });
 }
-
-// import union operation
-import * as unionOperator from "@arcgis/core/geometry/operators/unionOperator.js";
-// add buffer
-import * as bufferOperator from "@arcgis/core/geometry/operators/bufferOperator.js";
 
 // on roads action clicked
 function addRoads() {
@@ -1654,7 +1890,7 @@ import * as differenceOperator from "@arcgis/core/geometry/operators/differenceO
 // import * as unionTypes from "@arcgis/core/unionTypes.js";
 
 // on clip result action clicked
-function clipResultClicked() {
+async function clipResultClicked() {
   // get the current view
   const view = document.querySelector("arcgis-map").view;
   // get the buffer layer
@@ -1681,6 +1917,14 @@ function clipResultClicked() {
     solarArrayUnions,
     bufferUnions
   );
+  // clear the buffer layer
+  bufferLayer.removeAll();
+  // clear the clipping features layer
+  const clippingLayer = view.map.layers.find(
+    (layer) => layer.title === "Clipping Features"
+  );
+  // clear all sub layers
+  clippingLayer.removeAll();
   // create result layer if it does not exist
   if (
     !view.map.allLayers.find((layer) => layer.title === "Clipped Solar Array")
@@ -1693,8 +1937,126 @@ function clipResultClicked() {
       new Graphic({
         geometry: clippedSolarArray,
         // symbol: solarArrayLayer.renderer.symbol.clone(),
+        symbol: {
+          type: "simple-fill",
+          color: "blue",
+          outline: {
+            color: [0, 0, 0, 1],
+            width: 1,
+          },
+        },
       })
     );
+
+    solarArrayLayer.graphics = resultLayer.graphics.clone();
+    // update the stats dialog
+    const statsDialog = document.querySelector("#stats-dialog");
+    statsDialog.open = true;
+    // number of features
+    const numberOfFeatures = resultLayer.graphics.length;
+    // total area
+
+    const geodesticArea = geodeticAreaOperator.execute(
+      unionOperator.executeMany(
+        resultLayer.graphics.items.map((graphic) => graphic.geometry)
+      )
+    );
+    // distance to nearest substation
+    const substationLayer = view.map.allLayers.find(
+      (layer) => layer.title === "Substations"
+    );
+    const substationQuery = new Query();
+    substationQuery.geometry = clippedSolarArray;
+    substationQuery.spatialRelationship = "intersects";
+    substationQuery.distance = 10; // query within 10 km
+    substationQuery.units = "kilometers";
+    substationQuery.returnGeometry = true;
+    substationQuery.outFields = ["*"];
+
+    var distanceSub = 0;
+
+    await substationLayer.queryFeatures(substationQuery).then((result) => {
+      if (result.features.length > 0) {
+        const nearestSubstation = result.features[0];
+        distanceSub = geodeticDistanceOperator.execute(
+          clippedSolarArray,
+          nearestSubstation.geometry,
+          {
+            units: "feet",
+          }
+        );
+      }
+    });
+
+    // distance to nearest transmission line
+    const transmissionLineLayer = view.map.allLayers.find(
+      (layer) => layer.title === "Transmission_Lines"
+    );
+    const transmissionLineQuery = new Query();
+    transmissionLineQuery.geometry = clippedSolarArray;
+    transmissionLineQuery.spatialRelationship = "intersects";
+    transmissionLineQuery.distance = 10; // query within 10 km
+    transmissionLineQuery.units = "kilometers";
+    transmissionLineQuery.returnGeometry = true;
+    transmissionLineQuery.outFields = ["*"];
+    var distanceTrans = 0;
+    await transmissionLineLayer
+      .queryFeatures(transmissionLineQuery)
+      .then((result) => {
+        if (result.features.length > 0) {
+          distanceTrans = geodeticDistanceOperator.execute(
+            clippedSolarArray,
+            unionOperator.executeMany(
+              result.features.map((feature) => feature.geometry)
+            ),
+            {
+              units: "feet",
+            }
+          );
+        }
+      });
+
+    // perimeter
+    const perimeter = lengthOperator.execute(
+      clippedSolarArray,
+      {
+        unit: "feet",
+      }
+    );
+
+    // update the stats dialog
+    statsDialog.innerHTML = `
+      <table style="width: 100%; border-collapse: collapse;">
+        <thead>
+          <tr style="background-color: #f2f2f2;">
+            <th style="padding: 8px; border: 1px solid #ddd; text-align: left;">Attribute</th>
+            <th style="padding: 8px; border: 1px solid #ddd; text-align: right;">Value</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td style="padding: 8px; border: 1px solid #ddd;">Number of Features</td>
+            <td style="padding: 8px; border: 1px solid #ddd; text-align: right;">${numberOfFeatures}</td>
+          </tr>
+          <tr>
+            <td style="padding: 8px; border: 1px solid #ddd;">Total Area (sqft)</td>
+            <td style="padding: 8px; border: 1px solid #ddd; text-align: right;">${geodesticArea.toFixed(2)}</td>
+          </tr>
+          <tr>
+            <td style="padding: 8px; border: 1px solid #ddd;">Distance to Nearest Substation (ft)</td>
+            <td style="padding: 8px; border: 1px solid #ddd; text-align: right;">${distanceSub.toFixed(2)}</td>
+          </tr>
+          <tr>
+            <td style="padding: 8px; border: 1px solid #ddd;">Distance to Nearest Transmission Line (ft)</td>
+            <td style="padding: 8px; border: 1px solid #ddd; text-align: right;">${distanceTrans.toFixed(2)}</td>
+          </tr>
+          <tr>
+            <td style="padding: 8px; border: 1px solid #ddd;">Perimeter (ft)</td>
+            <td style="padding: 8px; border: 1px solid #ddd; text-align: right;">${perimeter.toFixed(2)}</td>
+          </tr>
+        </tbody>
+      </table>
+    `;
     // add the result layer to the map
     view.map.add(resultLayer);
   } else {
@@ -1716,8 +2078,86 @@ function clipResultClicked() {
             color: [0, 0, 0, 1],
             width: 1,
           },
-        }
+        },
       })
     );
+
+    solarArrayLayer.graphics = resultLayer.graphics.clone();
+
+    // update the stats dialog
+    const statsDialog = document.querySelector("#stats-dialog");
+    statsDialog.open = true;
+    // number of features
+    const numberOfFeatures = resultLayer.graphics.length;
+    // total area
+
+    const geodesticArea = geodeticAreaOperator.execute(
+      unionOperator.executeMany(
+        resultLayer.graphics.items.map((graphic) => graphic.geometry)
+      )
+    );
+    // distance to nearest substation
+    const substationLayer = view.map.allLayers.find(
+      (layer) => layer.title === "Substations"
+    );
+    const substationQuery = new Query();
+    substationQuery.geometry = clippedSolarArray;
+    substationQuery.spatialRelationship = "intersects";
+    substationQuery.distance = 10; // query within 10 km
+    substationQuery.units = "kilometers";
+    substationQuery.returnGeometry = true;
+    substationQuery.outFields = ["*"];
+
+    var distanceSub = 0;
+
+    await substationLayer.queryFeatures(substationQuery).then((result) => {
+      if (result.features.length > 0) {
+        const nearestSubstation = result.features[0];
+        distanceSub = geodeticDistanceOperator.execute(
+          clippedSolarArray,
+          nearestSubstation.geometry,
+          {
+            units: "feet",
+          }
+        );
+      }
+    });
+
+    // distance to nearest transmission line
+    const transmissionLineLayer = view.map.allLayers.find(
+      (layer) => layer.title === "Transmission_Lines"
+    );
+    const transmissionLineQuery = new Query();
+    transmissionLineQuery.geometry = clippedSolarArray;
+    transmissionLineQuery.spatialRelationship = "intersects";
+    transmissionLineQuery.distance = 10; // query within 10 km
+    transmissionLineQuery.units = "kilometers";
+    transmissionLineQuery.returnGeometry = true;
+    transmissionLineQuery.outFields = ["*"];
+    var distanceTrans = 0;
+    await transmissionLineLayer
+      .queryFeatures(transmissionLineQuery)
+      .then((result) => {
+        if (result.features.length > 0) {
+          distanceTrans = geodeticDistanceOperator.execute(
+            clippedSolarArray,
+            unionOperator.executeMany(
+              result.features.map((feature) => feature.geometry)
+            ),
+            {
+              units: "feet",
+            }
+          );
+        }
+      });
+    // update the stats dialog
+    statsDialog.innerHTML = `
+      <p>Number of features: ${numberOfFeatures}</p>
+      <p>Total area: ${geodesticArea.toFixed(2)} sqft</p>
+      <p>Distance to nearest substation: ${distanceSub.toFixed(2)} ft</p>
+      <p>Distance to nearest transmission line: ${distanceTrans.toFixed(
+        2
+      )} ft</p>
+    `;
   }
 }
