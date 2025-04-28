@@ -1,1 +1,0 @@
-import{aO as e}from"./index-CgLC99fU.js";const o=new e("cyan"),l=1,n=.25;new e("black");const r=.25,t="default",c="temporary",w=new e("yellow"),m=8;export{t as c,o as e,n as l,c as m,w as p,l as r,r as w,m as y};

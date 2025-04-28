@@ -55,6 +55,8 @@ import "@arcgis/map-components/dist/components/arcgis-layer-list";
 import "@arcgis/map-components/dist/components/arcgis-expand";
 import "@arcgis/map-components/dist/components/arcgis-basemap-gallery";
 import "@arcgis/map-components/dist/components/arcgis-placement";
+import "@arcgis/map-components/dist/components/arcgis-coordinate-conversion";
+
 // measurement
 import "@arcgis/map-components/dist/components/arcgis-distance-measurement-2d";
 import "@arcgis/map-components/dist/components/arcgis-area-measurement-2d";
@@ -178,12 +180,12 @@ root.render(
               autoClose
             >
               <calcite-action-pad expandDisabled>
-                <calcite-action
+                {/* <calcite-action
                   id="DetectBuildingFootprints"
                   text="Detect Building Footprints"
                   icon="footprint"
                   onClick={addBuildingFootprints}
-                ></calcite-action>
+                ></calcite-action> */}
                 <calcite-action
                   id="DetectRoads"
                   text="Road Segments"
@@ -346,10 +348,11 @@ root.render(
         <arcgis-map
           // itemId="1d9aec5e950f46f9a35a0d399e7e0cf1"
           center="-83.74, 42.27"
-          zoom="15"
+          zoom="10"
           onarcgisViewReadyChange={onArcgisViewReadyChange}
         >
           {/* Sketch Actions */}
+          <arcgis-search position="top-left"></arcgis-search>
           <arcgis-expand position="top-left" id="my-expand">
             <arcgis-sketch
               id="my-sketch"
@@ -360,6 +363,12 @@ root.render(
               expanded
             ></arcgis-sketch>
           </arcgis-expand>
+
+          <arcgis-coordinate-conversion
+            position="bottom-left"
+            hideExpandButton
+            // conversions="[]"
+          ></arcgis-coordinate-conversion>
 
           {/* Map Views */}
           <arcgis-placement position="top-right">
@@ -503,6 +512,11 @@ root.render(
             Hope this tool helps you in your solar development journey!
           </li>
         </ul>
+        <calcite-label>
+          link to update logs: 
+          <a
+            href=""></a>
+        </calcite-label>
       </calcite-dialog>
       {/* The Stats Table */}
       <calcite-dialog
@@ -692,7 +706,7 @@ function onArcgisViewReadyChange(event) {
   // add layers to the group layer
   // substation layer
   const substationsLayer = new FeatureLayer({
-    url: "https://services6.arcgis.com/b0gOZ1Tb5FUNjEkv/arcgis/rest/services/R_STEP_Base_Layers_WFL1/FeatureServer/0",
+    url: "https://services6.arcgis.com/b0gOZ1Tb5FUNjEkv/arcgis/rest/services/Substations/FeatureServer",
     title: "Substations",
     outFields: ["*"],
     popupTemplate: {
@@ -862,7 +876,7 @@ function onArcgisViewReadyChange(event) {
       unionOperator.executeMany(
         graphics.items.map((graphic) => graphic.geometry)
       ),
-      { units: "square-feet" }
+      { unit: "acres" }
     );
     // get the centroid of the solar array
     const centroid = centroidOperator.execute(
@@ -906,17 +920,6 @@ function onArcgisViewReadyChange(event) {
           const nearTransmissionLine = unionOperator.executeMany(
             result.features.map((feature) => feature.geometry)
           );
-          // console.log(nearestTransmissionLine);
-          // const closestPoint = geodesicProximityOperator.getNearestCoordinate(
-          //   nearestTransmissionLine.geometry,
-          //   unionOperator.executeMany(
-          //     graphics.items.map((graphic) => graphic.geometry)
-          //   ),
-          //   {
-          //     unit: "feet",
-          //   }
-          // ).coordinate
-          // console.log(closestPoint);
           distanceTrans = geodeticDistanceOperator.execute(
             unionOperator.executeMany(
               graphics.items.map((graphic) => graphic.geometry)
@@ -924,7 +927,7 @@ function onArcgisViewReadyChange(event) {
             // The nearest point on the transmission line
             nearTransmissionLine,
             {
-              units: "feet",
+              unit: "feet",
             }
           );
         }
@@ -950,7 +953,7 @@ function onArcgisViewReadyChange(event) {
           ),
           nearestSubstation.geometry,
           {
-            units: "feet",
+            unit: "feet",
           }
         );
       }
@@ -959,7 +962,7 @@ function onArcgisViewReadyChange(event) {
     // perimeter
     const perimeters = graphics.items.map((graphic) => {
       const polyline = new Polyline({
-        paths: graphic.geometry.rings,
+        paths: graphic.geometry.rings[0].slice(0, -1),
         spatialReference: graphic.geometry.spatialReference,
       });
       return lengthOperator.execute(polyline, {
@@ -982,7 +985,7 @@ function onArcgisViewReadyChange(event) {
             <td style="padding: 8px; border: 1px solid #ddd; text-align: right;">${numberOfFeatures}</td>
           </tr>
           <tr>
-            <td style="padding: 8px; border: 1px solid #ddd;">Total Area (sqft)</td>
+            <td style="padding: 8px; border: 1px solid #ddd;">Total Area (acres)</td>
             <td style="padding: 8px; border: 1px solid #ddd; text-align: right;">${geodesticArea.toFixed(
               2
             )}</td>
@@ -1959,7 +1962,10 @@ async function clipResultClicked() {
     const geodesticArea = geodeticAreaOperator.execute(
       unionOperator.executeMany(
         resultLayer.graphics.items.map((graphic) => graphic.geometry)
-      )
+      ),
+      {
+        unit: "acres",
+      }
     );
     // distance to nearest substation
     const substationLayer = view.map.allLayers.find(
@@ -1982,7 +1988,7 @@ async function clipResultClicked() {
           clippedSolarArray,
           nearestSubstation.geometry,
           {
-            units: "feet",
+            unit: "feet",
           }
         );
       }
@@ -2010,7 +2016,7 @@ async function clipResultClicked() {
               result.features.map((feature) => feature.geometry)
             ),
             {
-              units: "feet",
+              unit: "feet",
             }
           );
         }
@@ -2039,7 +2045,7 @@ async function clipResultClicked() {
             <td style="padding: 8px; border: 1px solid #ddd; text-align: right;">${numberOfFeatures}</td>
           </tr>
           <tr>
-            <td style="padding: 8px; border: 1px solid #ddd;">Total Area (sqft)</td>
+            <td style="padding: 8px; border: 1px solid #ddd;">Total Area (acres)</td>
             <td style="padding: 8px; border: 1px solid #ddd; text-align: right;">${geodesticArea.toFixed(2)}</td>
           </tr>
           <tr>
@@ -2094,7 +2100,10 @@ async function clipResultClicked() {
     const geodesticArea = geodeticAreaOperator.execute(
       unionOperator.executeMany(
         resultLayer.graphics.items.map((graphic) => graphic.geometry)
-      )
+      ),
+      {
+        unit: "acres",
+      }
     );
     // distance to nearest substation
     const substationLayer = view.map.allLayers.find(
@@ -2117,7 +2126,7 @@ async function clipResultClicked() {
           clippedSolarArray,
           nearestSubstation.geometry,
           {
-            units: "feet",
+            unit: "feet",
           }
         );
       }
@@ -2145,7 +2154,7 @@ async function clipResultClicked() {
               result.features.map((feature) => feature.geometry)
             ),
             {
-              units: "feet",
+              unit: "feet",
             }
           );
         }
