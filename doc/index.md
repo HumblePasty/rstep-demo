@@ -8,9 +8,15 @@
 
 
 
+You've reached the documentation folder of this project.
+
+
+
 ## Project Description
 
-This tool is for a Web tool based on ArcGIS developed to contextualize the setbacks of solar panel siting for local government entities.
+This tool is an auxiliary tool developed as part of the DOE R-STEP project that aims to help solar developers and local governments in Michigan to understand the potential for solar development in their communities.
+
+This tool is designed to help users visualize and analyze the setback requirements caused by roads, transmission lines, buildings, and other features, in a user-friendly way. The ultimate goal is to help users understand what the installed capacity of solar energy in their communities could be, and to help them make informed decisions about solar development and lead to more efficient and effective solar siting discussions.
 
 
 
@@ -28,9 +34,13 @@ This tool is for a Web tool based on ArcGIS developed to contextualize the setba
 
 
 
-## Appendices
+## Demo
 
-### Development Notes
+See demo [here](https://humblepasty.github.io/rstep-demo/doc/demo)
+
+
+
+## Development Notes
 
 - [1/10/2025](https://humblepasty.github.io/rstep-demo/doc/MeetingNotes/1_10)
 - [1/17/2025](https://humblepasty.github.io/rstep-demo/doc/MeetingNotes/1_17)
@@ -44,4 +54,7 @@ This tool is for a Web tool based on ArcGIS developed to contextualize the setba
 - [3/14/2025](https://humblepasty.github.io/rstep-demo/doc/MeetingNotes/3_14)
 - [3/20/2025](https://humblepasty.github.io/rstep-demo/doc/MeetingNotes/3_20)
 - [3/24/2025](https://humblepasty.github.io/rstep-demo/doc/MeetingNotes/3_24)
+- [4/04/2025](https://humblepasty.github.io/rstep-demo/doc/MeetingNotes/4_05)
+- [4/18/2025](https://humblepasty.github.io/rstep-demo/doc/MeetingNotes/4_18)
+- [4/28/2025](https://humblepasty.github.io/rstep-demo/doc/MeetingNotes/4_28)
 
