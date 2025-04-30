@@ -2,6 +2,8 @@
 
 > Author: Haolin Li (hli@5lakesenergy)
 >
+> GitHub repo: https://github.com/HumblePasty/rstep-demo
+>
 > Last Updated: 4/30/2025
 
 
@@ -11,6 +13,8 @@
 This tool is an auxiliary tool developed as part of the DOE R-STEP project that aims to help solar developers and local governments in Michigan to understand the potential for solar development in their communities.
 
 This tool is designed to help users visualize and analyze the setback requirements caused by roads, transmission lines, buildings, and other features, in a user-friendly way. The ultimate goal is to help users understand what the installed capacity of solar energy in their communities could be, and to help them make informed decisions about solar development and lead to more efficient and effective solar siting discussions.
+
+![image-20250430135856411](./README.assets/image-20250430135856411.png)
 
 
 
@@ -38,6 +42,7 @@ This tool is designed to help users visualize and analyze the setback requiremen
 /README.md - this document, the overall description
 /doc - documentation and meeting notes
 /src - working src
+	/pages - components, not used currently
 	index.jsx - main script
 	index.css - styles
 /dist - build export
@@ -60,6 +65,18 @@ Thus in the development process I switched and based the whole project on React 
 - [node.js 22.13.0](https://nodejs.org/en)
 - [npm 10.9.2](https://www.npmjs.com/)
 
+**How to configurate**
+
+- Download node and npm environment (using links above)
+
+- Git clone the repository
+
+- Go to the project root folder and run:
+
+  ```
+  npm install
+  ```
+
 
 
 ## How to Run in Dev mode
@@ -80,16 +97,23 @@ Thus in the development process I switched and based the whole project on React 
 
 1. Go to the source folder
 
-2. `npm install` to install the node modules
+2. Run `npm run build`
 
-3. `npm run` or `npm run dev` to see in debug mode
+3. Go to the project root folder and push the changes to GitHub repo using:
 
-4. Go to https://localhost:3001 and explore
+   ```bash
+   git status
+   git add .
+   git commit -m "[Your Comment]"
+   git push origin master
+   ```
 
-   Note that the port number might change due to setting
+4. The changes will be automatically applied to the deployed project
 
 
 
 ## Deployed Project
 
-[TBD: Published Project Link]
+[Link to Project](https://humblepasty.github.io/rstep-demo/dist)
+
+Currently the project is deployed as a whole through GitHub Pages. More formal deployment pending.
