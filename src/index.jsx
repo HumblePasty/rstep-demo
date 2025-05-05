@@ -35,6 +35,8 @@ import "@esri/calcite-components/dist/components/calcite-tooltip";
 import "@esri/calcite-components/dist/components/calcite-link";
 import "@esri/calcite-components/dist/components/calcite-popover";
 import "@esri/calcite-ui-icons";
+// input number
+import "@esri/calcite-components/dist/components/calcite-input-number";
 // tree
 import "@esri/calcite-components/dist/components/calcite-tree";
 import "@esri/calcite-components/dist/components/calcite-tree-item";
@@ -239,20 +241,31 @@ root.render(
                 label="Buffer"
                 overlayPositioning="fixed"
                 triggerDisabled
-                autoClose
+                // autoClose
               >
-                <calcite-label alignment="center">
+                <calcite-label id="bufferLabel" alignment="center">
                   Buffer Distance (US feet)
+                  <calcite-input-number
+                    id="BufferInput"
+                    suffix-text="ft"
+                    min="0"
+                    max="800"
+                    placeholder="offset distance"
+                    step="5"
+                    scale="s"
+                    number-button-type="horizontal"
+                  ></calcite-input-number>
+                  <br></br>
                   <calcite-slider
                     id="BufferSlider"
                     min="0"
-                    max="100"
-                    step="1"
+                    max="800"
+                    step="5"
                     value="0"
                     label-handles
                     label-ticks
                     min-label="1"
-                    max-label="100"
+                    max-label="800"
                   ></calcite-slider>
                 </calcite-label>
                 <calcite-button
@@ -454,68 +467,73 @@ root.render(
       {/* About */}
       <calcite-dialog heading="About" id="about-dialog" slot="dialogs" modal>
         <calcite-label>
-          This tool is an auxiliary tool developed as part of the DOE R-STEP project that aims to help solar developers
-          and local governments in Michigan to understand the potential for solar development in their communities.
+          This tool is an auxiliary tool developed as part of the DOE R-STEP
+          project that aims to help solar developers and local governments in
+          Michigan to understand the potential for solar development in their
+          communities.
           <br></br>
           <br></br>
-          This tool is designed to help users visualize and analyze the setback requirements caused by roads, 
-          transmission lines, buildings, and other features, in a user-friendly way. The ultimate goal is to help users
-          understand what the installed capacity of solar energy in their communities could be, and to help them make informed
-           decisions about solar development and lead to more efficient and effective solar siting discussions.
+          This tool is designed to help users visualize and analyze the setback
+          requirements caused by roads, transmission lines, buildings, and other
+          features, in a user-friendly way. The ultimate goal is to help users
+          understand what the installed capacity of solar energy in their
+          communities could be, and to help them make informed decisions about
+          solar development and lead to more efficient and effective solar
+          siting discussions.
           <br></br>
           <br></br>
-          <b>
-            How to use this tool:
-          </b>
+          <b>How to use this tool:</b>
         </calcite-label>
         <ul>
           <li>
-            Start by defining one or more polygons with "<b>Define Solar Array</b>" on the map to represent solar
-            arrays.
+            Start by defining one or more polygons with "
+            <b>Define Solar Array</b>" on the map to represent solar arrays.
           </li>
           <li>
-            Explore "<b>Add Clipping Features</b>" to see how to add clipping features to the
-            map. You can add building footprints, road segments, and self-defined
-            polylines and polygons.
+            Explore "<b>Add Clipping Features</b>" to see how to add clipping
+            features to the map. You can add building footprints, road segments,
+            and self-defined polylines and polygons.
           </li>
           <li>
-            Use the "<b>Create/Edit Buffers</b>" to create a buffer around the selected
-            features. You can also delete the buffer.
+            Use the "<b>Create/Edit Buffers</b>" to create a buffer around the
+            selected features. You can also delete the buffer.
           </li>
           <li>
-            To view the clipped results, click on "<b>View/Update Clipped Results</b>".
+            To view the clipped results, click on "
+            <b>View/Update Clipped Results</b>".
           </li>
           <li>
-            You can always clear the solar array by clicking on "<b>Clear Solar Array</b>".
+            You can always clear the solar array by clicking on "
+            <b>Clear Solar Array</b>".
           </li>
           <li>
-            To view the statistics of the solar array, click on "<b>Toggle Stats Table</b>".
-            This will show you the number of features, total area, distance to nearest
-            substation, distance to nearest transmission line, and perimeter.
+            To view the statistics of the solar array, click on "
+            <b>Toggle Stats Table</b>". This will show you the number of
+            features, total area, distance to nearest substation, distance to
+            nearest transmission line, and perimeter.
           </li>
           <li>
-            You can also upload a layer to the map by clicking on "<b>Upload Layer</b>".
+            You can also upload a layer to the map by clicking on "
+            <b>Upload Layer</b>".
           </li>
           <li>
-            To edit the layer, click on "<b>Edit Layer</b>". This will open the ArcGIS
-            Editor widget.
+            To edit the layer, click on "<b>Edit Layer</b>". This will open the
+            ArcGIS Editor widget.
           </li>
           <li>
-            You can also save your results by clicking on "<b>Export Results</b>".
+            You can also save your results by clicking on "<b>Export Results</b>
+            ".
           </li>
           <li>
-            To import a file, click on "<b>Import from File</b>". This will open the
-            file picker. Load your file and click on "Open". The file will be
-            loaded into the map.
+            To import a file, click on "<b>Import from File</b>". This will open
+            the file picker. Load your file and click on "Open". The file will
+            be loaded into the map.
           </li>
-          <li>
-            Hope this tool helps you in your solar development journey!
-          </li>
+          <li>Hope this tool helps you in your solar development journey!</li>
         </ul>
         <calcite-label>
-          link to update logs: 
-          <a
-            href=""></a>
+          link to update logs:
+          <a href=""></a>
         </calcite-label>
       </calcite-dialog>
       {/* The Stats Table */}
@@ -789,6 +807,18 @@ function onArcgisViewReadyChange(event) {
   const bufferSlider = document.querySelector("#BufferSlider");
   // add event listener for slider change
   bufferSlider.addEventListener("calciteSliderChange", bufferSliderChange);
+
+  // get buffer input
+  const bufferInput = document.querySelector("#BufferInput");
+  // add event listener for input change
+  bufferInput.addEventListener("calciteInputNumberChange", (event) => {
+    // get the value of the input
+    const value = event.target.value;
+    // set the value of the slider
+    bufferSlider.value = value;
+    // trigger the slider change event
+    bufferSlider.dispatchEvent(new Event("calciteSliderChange"));
+  });
 
   // get the attribution widget
   const attributionWidget = document
@@ -1779,6 +1809,10 @@ function BufferActionclicked() {
 
 // slider change
 function bufferSliderChange(event) {
+  // get the buffer input
+  const bufferInput = document.querySelector("#BufferInput");
+  // set the input value to the slider value
+  bufferInput.value = event.target.value;
   // get the current view
   const view = document.querySelector("arcgis-map").view;
   // get the popup features

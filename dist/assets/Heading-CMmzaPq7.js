@@ -1,0 +1,1 @@
+import{br as i,bs as l,b4 as o,bt as c}from"./index-BlU5-B7d.js";function b({level:n,class:e,...t},s){const r=a(n);return i(`h${r}`,{...t,"aria-level":String(r),class:l(c.heading,e),role:"heading"},s)}function a(n){return o(Math.ceil(n),1,6)}function f(n,e=1){return a(n+e)}export{b as e,f as n};

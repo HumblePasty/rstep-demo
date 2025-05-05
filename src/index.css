@@ -70,3 +70,8 @@ calcite-shell-panel {
 #bottom-panel {
   /* height: 50px; */
 }
+
+#bufferLabel {
+  /* padding */
+  padding: 10px;
+}
